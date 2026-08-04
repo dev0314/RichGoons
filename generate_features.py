@@ -68,4 +68,4 @@ enriched_df = pipeline.fit_transform(df)
 
 enriched_df = reduce_mem_usage(enriched_df)
 
-enriched_df.to_csv("BTCUSDT_5m_2023-2025_features_compressed.csv", index=False)
+enriched_df.to_parquet("BTCUSDT_5m_2023-2025_features_compressed.parquet", index=False, compression="zstd")
