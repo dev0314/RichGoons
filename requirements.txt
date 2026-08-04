@@ -1,0 +1,13 @@
+binance-connector
+joblib
+matplotlib
+numpy
+pandas
+plotly
+python-dateutil
+python-dotenv
+pytz
+scikit-learn
+ta
+tqdm
+xgboost
