@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+import os
 from features import FeaturePipeline
 
 
@@ -68,4 +68,6 @@ enriched_df = pipeline.fit_transform(df)
 
 enriched_df = reduce_mem_usage(enriched_df)
 
-enriched_df.to_parquet("BTCUSDT_5m_2023-2025_features_compressed.parquet", index=False, compression="zstd")
+desktop_path = os.path.expanduser("~/Desktop/BTCUSDT_5m_2023-2025_features_compressed.parquet")
+enriched_df.to_parquet(desktop_path, index=False)
+#enriched_df.to_parquet("BTCUSDT_5m_2023-2025_features_compressed.parquet", index=False, compression="zstd")
