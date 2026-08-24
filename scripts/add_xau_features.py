@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 from features import (
-    add_xau_volatility_features
+    add_xau_features
 )
 
 # Memory saving function credit to https://www.kaggle.com/gemartin/load-data-reduce-memory-usage
@@ -103,7 +103,7 @@ print(
     "Engineering volatility features..."
 )
 
-df_gold = add_xau_volatility_features(
+df_gold = add_xau_features(
     df_gold
 )
 
@@ -128,7 +128,7 @@ print(
     "Saving feature-engineered dataset..."
 )
 
-df_gold.to_excel("/Users/devangasaikia/Desktop/XAUUSD_5m_2021-2025.xlsx", index=False)
+df_gold.to_excel("/Users/devangasaikia/Desktop/XAUUSD_5m_2021-2025_new.xlsx", index=False)
 
 print(
     f"Saved to:\n{OUTPUT_PATH}"
