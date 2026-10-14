@@ -24,6 +24,7 @@ from ta.volatility import (
 # =========================================================
 
 REQUIRED_COLUMNS = [
+    "Open Time",
     "Open",
     "High",
     "Low",
@@ -80,6 +81,101 @@ def add_xau_features(
     _validate(df)
 
     df = df.copy()
+
+        # =====================================================
+    # TIME FEATURES
+    # =====================================================
+
+    df["Open Time"] = pd.to_datetime(
+        df["Open Time"],
+        utc=True,
+    )
+
+    hour = df["Open Time"].dt.hour
+
+    minute = df["Open Time"].dt.minute
+
+    day_of_week = (
+        df["Open Time"].dt.dayofweek
+    )
+
+    # -----------------------------------------------------
+    # HOUR CYCLICAL FEATURES
+    # -----------------------------------------------------
+
+    df["hour_sin"] = np.sin(
+        2 * np.pi * hour / 24
+    )
+
+    df["hour_cos"] = np.cos(
+        2 * np.pi * hour / 24
+    )
+
+    # -----------------------------------------------------
+    # MINUTE CYCLICAL FEATURES
+    # -----------------------------------------------------
+
+    df["minute_sin"] = np.sin(
+        2 * np.pi * minute / 60
+    )
+
+    df["minute_cos"] = np.cos(
+        2 * np.pi * minute / 60
+    )
+
+    # -----------------------------------------------------
+    # DAY OF WEEK
+    # -----------------------------------------------------
+
+    df["day_of_week_sin"] = np.sin(
+        2 * np.pi * day_of_week / 7
+    )
+
+    df["day_of_week_cos"] = np.cos(
+        2 * np.pi * day_of_week / 7
+    )
+
+    # -----------------------------------------------------
+    # WEEKEND
+    # -----------------------------------------------------
+
+    df["is_weekend"] = (
+        day_of_week >= 5
+    ).astype("int8")
+
+    # -----------------------------------------------------
+    # TRADING SESSIONS
+    # -----------------------------------------------------
+    #
+    # Timestamp is treated as UTC.
+    #
+    # These are broad session windows:
+    #
+    # Asian:       00:00 - 08:00 UTC
+    # London:      08:00 - 16:00 UTC
+    # New York:    13:00 - 21:00 UTC
+    # Overlap:     13:00 - 16:00 UTC
+    #
+
+    df["asian_session"] = (
+        (hour >= 0)
+        & (hour < 8)
+    ).astype("int8")
+
+    df["london_session"] = (
+        (hour >= 8)
+        & (hour < 16)
+    ).astype("int8")
+
+    df["new_york_session"] = (
+        (hour >= 13)
+        & (hour < 21)
+    ).astype("int8")
+
+    df["london_new_york_overlap"] = (
+        (hour >= 13)
+        & (hour < 16)
+    ).astype("int8")
 
     # =====================================================
     # PREVIOUS CLOSE
@@ -564,6 +660,24 @@ def add_xau_features(
     return df
 
 # =========================================================
+# TIME FEATURES
+# =========================================================
+
+XAU_TIME_FEATURES = [
+    "hour_sin",
+    "hour_cos",
+    "minute_sin",
+    "minute_cos",
+    "day_of_week_sin",
+    "day_of_week_cos",
+    "is_weekend",
+    "asian_session",
+    "london_session",
+    "new_york_session",
+    "london_new_york_overlap",
+]
+
+# =========================================================
 # PRICE FEATURES
 # =========================================================
 
@@ -626,4 +740,5 @@ XAU_FEATURES = (
     XAU_PRICE_FEATURES
     + XAU_CANDLE_FEATURES
     + XAU_VOLATILITY_FEATURES
+    + XAU_TIME_FEATURES
 )

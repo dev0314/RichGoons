@@ -127,6 +127,10 @@ df_gold = reduce_mem_usage(
 print(
     "Saving feature-engineered dataset..."
 )
+df_gold["Open Time"] = (
+    df_gold["Open Time"]
+    .dt.tz_localize(None)
+)
 
 df_gold.to_excel("/Users/devangasaikia/Desktop/XAUUSD_5m_2021-2025_new.xlsx", index=False)
 
