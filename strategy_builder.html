@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RG Labs | Strategy Builder</title>
+<style>
+:root{
+  --bg:#0c111b;--panel:#111925;--panel2:#151f2d;--panel3:#1b2737;--line:#263449;
+  --text:#e7edf7;--muted:#91a0b6;--blue:#2875ff;--cyan:#16b8c5;--green:#20c889;
+  --red:#f05260;--purple:#9b70f5;--orange:#f4aa3c;--shadow:0 12px 34px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font:14px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+button,input,select{font:inherit}button{cursor:pointer;color:inherit}
+.app{height:100vh;display:grid;grid-template-columns:var(--left-width,250px) var(--left-divider,7px) minmax(400px,1fr) var(--right-divider,7px) var(--right-width,300px);grid-template-rows:58px minmax(220px,1fr) var(--bottom-divider,7px) var(--bottom-height,205px);background:var(--bg)}
+.topbar{grid-column:1/6;display:flex;align-items:center;gap:16px;padding:0 18px;border-bottom:1px solid var(--line);background:#0e1622;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;font-size:17px;min-width:235px}.brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2875ff,#14bac5);display:grid;place-items:center;font-weight:900}
+.strategy-name{background:#172233;border:1px solid #2a3a50;border-radius:8px;color:var(--text);padding:9px 12px;width:230px;outline:none}
+.top-spacer{flex:1}.pill{font-size:11px;color:#9db1ca;border:1px solid #34445b;border-radius:20px;padding:5px 9px}
+.btn{border:1px solid #34445b;background:#1a2636;border-radius:8px;padding:9px 13px;font-weight:650;transition:.15s}.btn:hover{filter:brightness(1.15);transform:translateY(-1px)}.btn.primary{background:#2867ed;border-color:#3679ff}.btn.teal{background:#087f91;border-color:#0ca8ba}.btn.ghost{background:transparent}.btn.small{padding:6px 9px;font-size:12px}
+.left{grid-column:1;grid-row:2/5;background:#101925;border-right:1px solid var(--line);overflow:auto;padding:14px 12px}
+.tabs{display:flex;gap:5px;border-bottom:1px solid var(--line);margin:-2px 0 14px}.tab{border:0;background:none;color:var(--muted);padding:10px 12px;border-bottom:2px solid transparent}.tab.active{color:#fff;border-color:var(--blue)}
+.search{width:100%;background:#0d1724;border:1px solid #2a394d;border-radius:8px;padding:10px;color:var(--text);outline:none;margin-bottom:14px}
+.group-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8295af;font-weight:750;margin:15px 3px 8px}
+.palette-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:#172333;border:1px solid transparent;margin-bottom:6px;cursor:grab;user-select:none;transition:.15s}
+.palette-item:hover{border-color:#3b5b83;background:#1c2b40}.palette-item:active{cursor:grabbing}.palette-item .ico{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-weight:800;font-size:14px;color:white}
+.ico.purple{background:#7952d9}.ico.blue{background:#176bd0}.ico.cyan{background:#087f9f}.ico.orange{background:#bd811c}.ico.pink{background:#c43c83}.ico.red{background:#c93d4c}.ico.green{background:#159568}.ico.slate{background:#536984}
+.palette-item small{display:block;color:#8fa1b8;font-size:11px;margin-top:2px}
+.workspace{grid-column:3;grid-row:2;position:relative;overflow:hidden;background-color:#0b1420;background-image:radial-gradient(#26364b 1px,transparent 1px);background-size:19px 19px}
+.canvas-head{position:absolute;top:12px;left:14px;right:14px;z-index:2;display:flex;align-items:center;gap:8px;pointer-events:none}.canvas-head>*{pointer-events:auto}.canvas-title{font-weight:700;color:#dce7f7}.canvas-hint{color:#71849d;font-size:12px;margin-left:8px}.canvas-tools{margin-left:auto;display:flex;gap:5px}
+.canvas-viewport{position:absolute;inset:0;overflow:auto}.canvas-world{position:relative;width:1600px;height:1000px;transform-origin:0 0}
+#edges{position:absolute;inset:0;width:1600px;height:1000px;overflow:visible;pointer-events:none}
+.edge{fill:none;stroke:#6684aa;stroke-width:2.2;pointer-events:stroke;cursor:pointer}.edge-draft{fill:none;stroke:#39b9ff;stroke-width:2.8;stroke-dasharray:7 5;pointer-events:none}.node.connection-target{outline:2px solid #39b9ff;outline-offset:4px;box-shadow:0 0 0 5px rgba(57,185,255,.12),var(--shadow)}.handle.out,.handle.true,.handle.false{touch-action:none;box-shadow:0 0 0 3px rgba(57,185,255,.10)}.handle.out:hover,.handle.true:hover,.handle.false:hover{transform:scale(1.3);box-shadow:0 0 0 5px rgba(57,185,255,.18)}.edge:hover{stroke:#22c6dc;stroke-width:3.5}.edge.hl{stroke:#22c6dc;stroke-width:3}
+.node{position:absolute;width:190px;min-height:82px;background:#172437;border:1px solid #425a78;border-radius:12px;box-shadow:var(--shadow);z-index:1;user-select:none;cursor:grab}
+.node.selected{outline:2px solid #2782ff;outline-offset:2px}.node-head{display:flex;align-items:center;gap:9px;padding:11px 12px 5px;font-weight:750}.node-icon{width:27px;height:27px;border-radius:7px;display:grid;place-items:center;font-weight:850;color:white}.node-sub{padding:0 12px 11px 48px;color:#9fb0c7;font-size:11px;line-height:1.5}
+.node.trigger{border-color:#169d70;background:#102c2a}.node.indicator{border-color:#865bdc;background:#211b36}.node.condition{border-color:#2779dc;background:#132943}.node.action-buy{border-color:#17a976;background:#102d2a}.node.action-sell{border-color:#d94b58;background:#321b25}.node.flow{border-color:#657e9e;background:#1b293a}.node.position{border-color:#16b8c5;background:#102b35}.node.risk{border-color:#bd811c;background:#302719}
+.node.trigger .node-icon{background:#15996e}.node.indicator .node-icon{background:#7952d9}.node.condition .node-icon{background:#176bd0}.node.action-buy .node-icon{background:#159568}.node.action-sell .node-icon{background:#d94351}.node.flow .node-icon{background:#536984}.node.position .node-icon{background:#087f91}.node.risk .node-icon{background:#bd811c}
+.handle{position:absolute;width:12px;height:12px;border:2px solid #b9d0ee;background:#17283c;border-radius:50%;z-index:3;cursor:crosshair}.handle.in{left:calc(50% - 6px);top:-7px}.handle.out{left:calc(50% - 6px);bottom:-7px}.handle.true{right:-7px;top:23px;background:#159568;border-color:#63e2b2}.handle.false{left:-7px;top:48px;background:#d94351;border-color:#ff8b96}
+.node[data-type="condition"] .handle.out{display:none}
+.node[data-type="condition"] .branch{position:absolute;font-size:10px;font-weight:800;letter-spacing:.45px;top:25px;pointer-events:none}
+.node[data-type="condition"] .branch.yes{right:-39px;color:#63e2b2;text-align:left}.node[data-type="condition"] .branch.no{left:-31px;top:50px;color:#ff7c88;text-align:right}
+.node.directional-ports .handle.in{opacity:0;pointer-events:none;transition:opacity .12s}
+.node.directional-ports[data-hover-input="left"] .handle.in-left,.node.directional-ports[data-hover-input="top"] .handle.in-top{opacity:1}
+.node.directional-ports[data-hover-input="left"] .handle.in-left,.node.directional-ports[data-hover-input="top"] .handle.in-top{pointer-events:auto}
+.node.directional-ports.has-incoming .handle.in{display:none}
+.node.directional-ports.has-incoming[data-input-side="left"] .handle.in-left,.node.directional-ports.has-incoming[data-input-side="top"] .handle.in-top{display:block;opacity:1;pointer-events:auto}
+.node.directional-ports:not(.has-incoming) .handle.out,.node.directional-ports:not(.has-incoming) .handle.true,.node.directional-ports:not(.has-incoming) .handle.false,.node.action-buy .handle.out,.node.action-sell .handle.out,.node[data-type="close"] .handle.out{display:none}
+.node.directional-ports:not(.has-incoming) .branch{display:none}
+.node.directional-ports.input-top .handle.out{left:calc(50% - 6px);right:auto;top:auto;bottom:-7px}
+.node.directional-ports.input-top .handle.true{left:calc(36% - 6px);right:auto;top:auto;bottom:-7px}
+.node.directional-ports.input-top .handle.false{left:calc(64% - 6px);right:auto;top:auto;bottom:-7px}
+.node[data-type="condition"].input-top .branch.yes{left:26%;right:auto;top:auto;bottom:-20px}
+.node[data-type="condition"].input-top .branch.no{left:56%;right:auto;top:auto;bottom:-20px}
+.node-actions{position:absolute;right:7px;top:7px;display:flex;gap:3px;opacity:0}.node:hover .node-actions,.node.selected .node-actions{opacity:1}.node-actions button{border:0;border-radius:5px;background:#293b52;color:#b8c8dc;width:21px;height:21px}
+.drop-hint{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);text-align:center;color:#637893;pointer-events:none}.drop-hint strong{display:block;color:#94a8c2;font-size:16px;margin-bottom:6px}
+.right{grid-column:5;grid-row:2;align-self:stretch;min-height:0;height:100%;background:#101925;border-left:1px solid var(--line);overflow:auto;padding:16px;container-type:inline-size}
+.panel-title{font-weight:750;font-size:15px;margin-bottom:5px}.panel-sub{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:18px}
+.property-id{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 16px;padding:9px 10px;background:#0c1724;border:1px solid #304158;border-radius:7px}.property-id-label{color:#9eb0c7;font-size:11px;text-transform:uppercase;letter-spacing:.5px}.property-id-value{color:#dce7f7;font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
+.field{margin:13px 0}.field label{display:block;color:#9eb0c7;font-size:12px;margin-bottom:6px}.field input,.field select{width:100%;padding:10px;background:#0c1724;border:1px solid #304158;border-radius:7px;color:#e7edf7;outline:none}.field input:focus,.field select:focus{border-color:#3987ff}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.empty-props{border:1px dashed #35465d;border-radius:10px;padding:20px 14px;text-align:center;color:#8093ad;line-height:1.6;margin-top:18px}
+.operand-picker{padding:10px;background:#0d1927;border:1px solid #2c4058;border-radius:8px;margin:12px 0}.operand-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.operand-heading label{color:#9eb0c7;font-size:12px;font-weight:650}.operand-heading select,.operand-picker select,.operand-picker input{width:100%;padding:8px;background:#0c1724;border:1px solid #304158;border-radius:7px;color:#e7edf7;outline:none}.operand-picker select:focus,.operand-picker input:focus{border-color:#3987ff}.operand-value-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px;margin-top:8px}.operand-bound{min-width:0}.operand-bound label{display:block;color:#9eb0c7;font-size:10px;margin-bottom:4px}.operand-swap{display:flex;align-items:center;justify-content:center;width:26px;height:24px;padding:0;border:1px solid #304158;border-radius:6px;background:#152233;color:#b9c9de;cursor:pointer}.operand-swap:hover:not(:disabled){border-color:#3987ff;color:#fff}.operand-swap:disabled{opacity:.4;cursor:not-allowed}.condition-sentence{padding:10px 11px;background:#122335;border-left:3px solid #3987ff;border-radius:5px;color:#d4e4f8;font-size:12px;line-height:1.5;margin:12px 0}.condition-warnings{padding:8px 10px;background:#302719;border:1px solid #765620;border-radius:7px;color:#f4c76d;font-size:11px;line-height:1.5;margin:10px 0}.condition-warnings:empty{display:none}.condition-warnings div+div{margin-top:5px}
+.connected-inputs,.condition-builder,.expression-preview,.condition-help{border:1px solid #263c54;background:#0d1b2a;border-radius:9px;padding:11px;margin:12px 0}.condition-panel-label{display:flex;align-items:center;gap:7px;font-weight:700;color:#dce7f7;margin-bottom:9px}.condition-panel-label small{font-weight:500;color:#8194ad}.connected-input-list{display:flex;flex-wrap:wrap;gap:7px}.connected-input-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #34516e;background:#132840;border-radius:7px;color:#cfe0f5;font-size:12px;cursor:grab;user-select:none;touch-action:none}.connected-input-chip:hover,.connected-input-chip:focus{border-color:#16b8c5;background:#193550;outline:none}.connected-input-chip.dragging{opacity:.5}.connected-input-chip .chip-icon{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:#7952d9;color:#fff;font-size:11px;font-weight:800}.connected-input-empty{color:#8194ad;font-size:11px;line-height:1.5}.condition-builder{padding:0;overflow:hidden}.condition-builder-head{display:flex;align-items:center;gap:8px;padding:10px 11px;border-bottom:1px solid #263c54;font-weight:700;flex-wrap:wrap}.condition-builder-head .spacer,.expression-group-head .spacer,.expression-rule-title .spacer{flex:1}.condition-builder-actions{display:flex;gap:6px}.condition-builder-actions .btn{padding:5px 8px;font-size:11px}.expression-tree{padding:10px}.expression-group{position:relative;margin:3px 0;padding:7px 8px 8px 12px;border:1px solid #29415b;border-radius:9px;background:#0c1928}.expression-group.nested{border-color:#087fa8;background:#0c1c2b}.expression-group.drag-target,.expression-item.drag-target{outline:2px solid #16b8c5;outline-offset:1px}.expression-group.drop-before:before,.expression-item.drop-before:before,.expression-group.drop-after:after,.expression-item.drop-after:after{content:'';position:absolute;left:4px;right:4px;height:3px;border-radius:3px;background:#22c6dc;z-index:2;pointer-events:none}.expression-group.drop-before:before,.expression-item.drop-before:before{top:-5px}.expression-group.drop-after:after,.expression-item.drop-after:after{bottom:-5px}.expression-source.drop-target,.expression-target.drop-target{outline:2px solid #16b8c5;outline-offset:2px;border-radius:6px;background:#15334a}.expression-group-head{display:flex;align-items:center;gap:7px;margin-bottom:7px;color:#dce7f7;font-size:12px;font-weight:700}.expression-group-head .folder{color:#f4c76d}.expression-group.is-collapsed>.expression-group-content,.expression-group.is-collapsed>.expression-group-buttons{display:none}.expression-item{position:relative;border:1px solid #263f58;border-radius:8px;background:#102033;margin:6px 0;padding:8px 9px;min-width:0}.expression-item.dragging,.expression-group.dragging{opacity:.48}.expression-rule-title{display:flex;align-items:center;gap:7px;margin-bottom:8px;color:#cbd9ea;font-size:12px;font-weight:650}.expression-grip{display:inline-grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border:1px solid #365572;border-radius:5px;background:#142b40;color:#a9c4dc;font-size:14px;cursor:grab;user-select:none;touch-action:none}.expression-grip:hover{border-color:#16b8c5;color:#fff}.condition-drag-ghost{position:fixed;z-index:10000;pointer-events:none;padding:8px 11px;border:1px solid #16b8c5;border-radius:8px;background:#11263a;color:#ecf7ff;box-shadow:0 8px 24px #0009;font-size:12px;white-space:nowrap;transform:translate(12px,12px)}.expression-controls{display:grid;grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr);gap:7px;align-items:center}.expression-controls select,.expression-controls input{min-width:0;width:100%;height:36px;padding:6px 8px;background:#0b1725;border:1px solid #30465f;border-radius:6px;color:#e7edf7;font-size:12px}.expression-controls select:focus,.expression-controls input:focus{outline:none;border-color:#3987ff}.expression-control-group{display:flex;gap:5px;min-width:0;width:100%}.expression-control-group select:first-child{flex:0 0 76px;max-width:76px}.expression-control-group select:last-child{flex:1 1 auto;width:0;max-width:none}.expression-op{width:100%;min-width:0;height:36px;padding:2px 5px;border:1px solid #2875ff;border-radius:7px;background:#075ccc;color:#fff;font-size:11px;font-weight:800;cursor:pointer;overflow:hidden;text-overflow:ellipsis}.expression-op[data-operator="OR"]{background:#a66a00;border-color:#d9940b}.expression-op[data-operator="NOT"]{background:#753ac4;border-color:#9b70f5}.expression-op:hover{filter:brightness(1.15)}.expression-delete,.expression-action{border:0;background:transparent;color:#94a9c1;padding:3px 5px;border-radius:5px}.expression-delete{color:#c6a9ac;font-size:16px}.expression-delete:hover{background:#442229;color:#ff9099}.expression-group-buttons{display:flex;gap:6px;margin:7px 0 0 20px}.expression-group-buttons button{font-size:10px;padding:4px 7px}.expression-empty{color:#8093ad;font-size:11px;padding:8px}.expression-invalid{font-size:10px;color:#f4c76d;overflow-wrap:anywhere}.expression-rule-warning{margin-top:7px;color:#f4c76d;font-size:10px;line-height:1.45}.expression-rule-warning div+div{margin-top:3px}.expression-joiner{display:flex;align-items:center;justify-content:center;position:relative;margin:5px 0}.expression-joiner:before{content:'';position:absolute;left:8px;top:-9px;bottom:-9px;border-left:1px dashed #2875ff;opacity:.65}.expression-preview{padding:10px}.expression-preview code{display:block;padding:9px 10px;background:#091523;border:1px solid #2c415a;border-radius:7px;color:#d5e5f7;white-space:normal;overflow-wrap:anywhere;line-height:1.7;font-size:12px}.condition-help{display:flex;gap:8px;color:#aabbd0;font-size:11px;line-height:1.5;background:#0d1b2a}.condition-help .info{color:#16b8c5;font-weight:900}
+@container (max-width:460px){.expression-controls{grid-template-columns:minmax(0,1fr)}.expression-source:before,.expression-target:before{display:block;margin:0 0 4px;color:#91a0b6;font-size:10px;font-weight:650}.expression-source:before{content:'Left operand'}.expression-target:before{content:'Right operand'}.expression-source,.expression-target{display:block}.expression-control-group select:first-child{flex-basis:86px;max-width:86px}.expression-controls>[data-rule-operator]{max-width:160px}.expression-joiner{margin:8px 0}.expression-rule-title{font-size:13px}}
+
+.col-resize{grid-row:2/5;position:relative;z-index:8;cursor:col-resize;touch-action:none;background:#0b1420;border-left:1px solid #26364b;border-right:1px solid #26364b;display:flex;align-items:center;justify-content:center}
+.col-resize:after{content:'';height:42px;width:3px;border-radius:4px;background:#536984;box-shadow:0 0 0 1px #1d2b3d}
+.col-resize:hover,.col-resize.dragging{background:#14263a}
+.col-resize:hover:after,.col-resize.dragging:after{background:#39a8ff}
+#leftResize{grid-column:2;grid-row:2/5}#rightResize{grid-column:4;grid-row:2}
+.resize-handle{grid-column:3/6;grid-row:3;cursor:row-resize;background:#0b1420;border-top:1px solid #26364b;border-bottom:1px solid #26364b;position:relative;z-index:4;touch-action:none;display:flex;align-items:center;justify-content:center}.resize-handle:after{content:'';width:42px;height:3px;border-radius:4px;background:#536984;box-shadow:0 0 0 1px #1d2b3d}.resize-handle:hover,.resize-handle.dragging{background:#14263a}.resize-handle:hover:after,.resize-handle.dragging:after{background:#39a8ff}
+.bottom{grid-column:3/6;grid-row:4;border-top:1px solid var(--line);background:#0f1824;display:flex;flex-direction:column;min-width:0}
+.bottom-tabs{display:flex;align-items:center;gap:4px;padding:0 14px;border-bottom:1px solid var(--line);min-height:42px}.bottom-tab{border:0;background:none;color:#91a2b9;padding:12px 11px;border-bottom:2px solid transparent}.bottom-tab.active{color:#52b6ff;border-color:#2875ff}
+.bottom-content{padding:12px 16px;overflow:auto;flex:1;min-height:0}.log-line{display:flex;gap:12px;color:#b7c5d8;font-size:12px;padding:4px 0}.log-time{color:#71849d;min-width:135px}.dot{width:7px;height:7px;border-radius:50%;background:#21c889;margin-top:5px}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{background:#152233;border:1px solid #26384e;border-radius:9px;padding:13px}.metric span{display:block;color:#8fa2bc;font-size:11px}.metric strong{display:block;font-size:20px;margin-top:7px}
+.code-wrap{height:100%;min-height:0;display:flex;flex-direction:column;gap:8px}.code-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:#9eb0c7;font-size:12px}.code-editor{display:block;flex:1 1 auto;width:100%;height:auto;min-height:0;resize:none;white-space:pre;overflow:auto;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c7def8;background:#09121d;border:1px solid #24354a;border-radius:8px;padding:14px;outline:none;tab-size:4;overscroll-behavior:contain}.code-editor:focus{border-color:#3987ff}.code-wrap.fullscreen-editor{position:fixed;inset:12px;z-index:100;background:#0f1824;padding:14px;border:1px solid #3a5575;border-radius:12px;box-shadow:0 20px 80px #000b;height:auto}.code-wrap.fullscreen-editor .code-editor{min-height:0}.code-wrap.fullscreen-editor .code-status{padding-bottom:4px}
+.code-status{font-size:11px;color:#91a0b6;min-height:16px}
+.code-status.error{color:#ff8992}.code-status.success{color:#20c889}
+.toast{position:fixed;right:18px;bottom:18px;background:#18352f;border:1px solid #1e9b73;color:#c7f9e7;padding:11px 15px;border-radius:8px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:.2s;z-index:20;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}.toast.error{background:#3a1d26;border-color:#d94b58;color:#ffe0e3}
+.modal-backdrop{position:fixed;inset:0;background:#0009;display:none;place-items:center;z-index:30}.modal{background:#121e2c;border:1px solid #34475f;border-radius:12px;padding:20px;width:min(520px,90vw);box-shadow:var(--shadow)}.modal h3{margin:0 0 8px}.modal p{color:#91a2b9;font-size:13px;line-height:1.5}
+@media(max-width:1050px){.app{grid-template-columns:var(--left-width,210px) 7px minmax(350px,1fr) 7px var(--right-width,260px)}.brand{min-width:190px}.strategy-name{width:180px}}
+@media(max-width:760px){html,body{overflow:auto}.app{min-width:950px;height:100vh}.topbar{min-width:950px}}
+
+/* VS Code-style panel visibility */
+.panel-toggles{display:flex;align-items:center;gap:6px;margin-left:4px;padding-left:12px;border-left:1px solid var(--line)}
+.panel-toggle{width:48px;height:44px;display:grid;place-items:center;font-size:25px;line-height:1;padding:0;border-radius:8px;color:#91a0b6}
+.panel-toggle.active{color:#e7edf7;background:#1b2b40;border-color:#456487}
+.app.hide-left{--left-width:0px;--left-divider:0px}
+.app.hide-right{--right-width:0px;--right-divider:0px}
+.app.hide-bottom{--bottom-height:0px;--bottom-divider:0px}
+.app.hide-left .left,.app.hide-right .right,.app.hide-bottom .bottom{display:none!important}
+.app.hide-left #leftResize,.app.hide-right #rightResize,.app.hide-bottom #bottomResize{display:none}
+.app.properties-closed{--right-width:0px;--right-divider:0px}
+.app.properties-closed .right,.app.properties-closed #rightResize{display:none}
+.workspace{min-width:0}
+
+/* Tableau Prep-inspired workspace styling: side panels only; bottom panel is intentionally untouched. */
+.left.tableau-left{padding:0 8px 12px;background:#101925;overflow:auto;scrollbar-width:thin;scrollbar-color:#34465e transparent}
+.tableau-left .tabs{position:sticky;top:0;z-index:4;background:#101925;margin:0 -8px 10px;padding:0 8px;gap:0}
+.tableau-left .tab{flex:1;padding:13px 8px;font-size:14px}
+.tableau-left .search{margin:0 2px 9px;width:calc(100% - 4px);border-radius:8px;background:#172333;padding:10px 12px}
+.palette-section{border:1px solid #26384d;border-radius:9px;margin:7px 0;background:#111d2b;overflow:hidden}
+.palette-section .group-title{margin:0;padding:10px 11px;display:flex;align-items:center;gap:9px;color:#e2eaf5;font-size:13px;letter-spacing:0;text-transform:none;cursor:pointer;border-bottom:1px solid transparent}
+.palette-section .group-title:hover{background:#182638}
+.section-symbol{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;background:#1b4b86;color:#bcdcff;font-size:16px}
+.section-symbol.blue{background:#153e70;color:#65baff}.section-symbol.orange{background:#593c16;color:#ffc66e}.section-symbol.red{background:#54232d;color:#ff8791}.section-symbol.shield{background:#183e70;color:#b8d6ff}
+.section-count{margin-left:auto;border-radius:7px;background:#29394e;padding:3px 7px;font-size:11px}
+.chevron{margin-left:auto;color:#93a8c1;font-size:18px;font-weight:400}
+.section-content{padding:7px 8px 8px;display:none;border-top:1px solid #26384d}
+.section-toggle.open+.section-content{display:block}
+.favorites-content{display:grid;grid-template-columns:1fr;gap:5px}
+.indicator-grid,.action-grid,.risk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.palette-item{min-width:0;min-height:37px;margin:0;padding:6px 7px;gap:6px;border:1px solid #2a3d54;border-radius:7px;background:#19283a;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.palette-item .ico{width:23px;height:23px;min-width:23px;border-radius:6px;font-size:12px}
+.palette-item>div{overflow:hidden;text-overflow:ellipsis}
+.palette-item small{display:none}
+.more-components{grid-column:1/-1;border:1px solid #344a64;background:#1a2a3d;border-radius:7px;color:#dce8f7;padding:7px;font-size:11px}
+.more-components:hover{border-color:#3e8bd0;background:#20364e}
+.right{padding:12px;background:#101925;scrollbar-width:thin;scrollbar-color:#34465e transparent}
+.panel-title{display:flex;align-items:center;gap:10px;font-size:18px;margin:0 0 4px}
+.panel-sub{font-size:11px;letter-spacing:.45px;margin:0 0 14px;color:#8298b3}
+.property-icon{width:34px;height:34px;display:inline-grid;place-items:center;border-radius:9px;background:#1b4d86;color:#e5f3ff;font-size:18px}
+.property-icon.condition{background:#176bd0}.property-icon.indicator{background:#7952d9}.property-icon.flow{background:#bd811c}.property-icon.action-buy{background:#159568}.property-icon.action-sell{background:#d94351}.property-icon.trigger{background:#159568}.property-icon.risk{background:#536984}
+.property-close{margin-left:auto;border:0;background:transparent;color:#a8b8cb;font-size:22px;padding:0 4px}
+.property-card{border:1px solid #293c53;border-radius:9px;background:#121f2e;padding:12px}
+.property-section-title{font-size:12px;font-weight:750;color:#c8d7e9;margin-bottom:9px;padding-bottom:8px;border-bottom:1px solid #293c53}
+.right .field{margin:12px 0}.right .field label{font-size:12px;color:#d1dbea;font-weight:650}.right .field input,.right .field select{background:#172638;border-color:#3a506b;border-radius:7px;padding:9px 10px}
+.right .btn{background:#1b2c40;border-color:#3a506b}.right .btn:hover{border-color:#4389c7}
+/* Keep the graph as the visual focus, with clearer Prep-style cards and connector paths. */
+.workspace{background-color:#0b1420;background-image:radial-gradient(#29415c .9px,transparent .9px);background-size:20px 20px}
+.node{border-radius:13px;box-shadow:0 7px 18px #0005;border-width:1.5px;background:#17283b}
+.node-head{font-size:14px;padding:10px 11px 5px}.node-icon{width:29px;height:29px;border-radius:8px}.node-sub{font-size:11px;color:#c1cee0;padding-bottom:10px}
+.edge{stroke:#b6c8df;stroke-width:2.5}.edge.hl{stroke:#33b7ff;stroke-width:3.2}
+
+
+/* Tableau Prep-inspired flow workspace */
+.left{padding:0 10px 14px;background:#101a27}.left .tabs{margin:0 -10px 12px;padding:0 10px;background:#111c2a;position:sticky;top:-14px;z-index:4}
+.left .tab{font-size:14px;font-weight:650;padding:13px 14px}.left .search{padding:10px 12px;margin-bottom:8px;border-radius:9px;background:#142235}
+.group-title{display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:#e0e9f5;margin:0;padding:11px 9px;border-top:1px solid #29394d;cursor:pointer}
+.palette-section{margin:0 -2px}.section-content{padding:5px 4px 9px}
+.section-content.indicator-grid,.section-content.action-grid,.section-content.risk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.palette-item{min-width:0;margin:0;padding:7px 6px;gap:6px;border:1px solid #304158;border-radius:8px;background:#172536;font-size:11px;min-height:37px}
+.palette-item .ico{width:23px;height:23px;flex:0 0 23px}.palette-item small{font-size:10px}
+.more-components{grid-column:1/-1;width:100%;padding:8px;border:1px solid #354b65;border-radius:7px;background:#172536;color:#d8e4f3}
+.workspace{background-color:#09131f;background-image:radial-gradient(#263d58 1px,transparent 1px);background-size:20px 20px}
+.canvas-head{height:58px;top:0;left:0;right:0;padding:0 16px;background:linear-gradient(180deg,#0c1725 0%,rgba(12,23,37,.94) 100%);border-bottom:1px solid #26384e}
+.canvas-title,.canvas-hint{display:none}.canvas-mode{height:100%;display:flex;align-items:center;gap:8px}
+.canvas-mode button{height:38px;padding:0 17px;border:1px solid #314760;border-radius:8px;background:#142235;color:#dbe7f7;font-weight:700}
+.canvas-mode button.active{background:#1b2c42;border-bottom:2px solid #18aeea}.canvas-tools{gap:6px}
+.canvas-tools .btn{min-width:38px;padding:8px 11px;background:#142235}.canvas-viewport{inset:58px 0 0}
+.canvas-world{min-width:1600px}.node{width:190px;min-height:82px;border-radius:17px;border-width:2px;background:#142337;box-shadow:0 8px 22px #0005;cursor:grab}
+.node-head{padding:11px 12px 3px;font-size:16px;gap:11px}.node-icon{width:34px;height:34px;border-radius:9px;font-size:18px}
+.node-sub{padding:0 12px 10px 57px;font-size:12px;color:#d1deed}
+.node.trigger{border-color:#12a875;background:linear-gradient(135deg,#10362f,#102b2c)}
+.node.indicator{border-color:#a34bf0;background:linear-gradient(135deg,#2b1d42,#1b1b34)}
+.node.condition{border-color:#0789ed;background:linear-gradient(135deg,#102e4e,#10243b)}
+.node.condition .node-icon{background:#086cdb}.node.flow{border-color:#f39a22;background:linear-gradient(135deg,#3a2a1a,#292319)}
+.node.action-buy{border-color:#12ad72;background:linear-gradient(135deg,#103b31,#102b2b)}
+.node.action-sell{border-color:#f0444d;background:linear-gradient(135deg,#401d28,#2b1b25)}
+.handle.in{left:-7px;top:calc(50% - 6px)}.handle.out{left:auto;right:-7px;top:calc(50% - 6px);bottom:auto}
+.node[data-type="condition"] .handle.true{right:-7px;top:26%;left:auto}
+.node[data-type="condition"] .handle.false{right:-7px;left:auto;top:70%}
+.node[data-type="condition"] .handle.true{right:-7px;left:auto;top:26%}
+.node[data-type="condition"] .handle.false{right:-7px;left:auto;top:70%}
+
+.node[data-type="condition"] .branch{right:-43px;left:auto;top:20%;font-size:10px}
+.node[data-type="condition"] .branch.no{right:-39px;left:auto;top:65%;text-align:left}
+.node[data-type="and"] .handle.out{right:-7px;left:auto;top:calc(50% - 6px);bottom:auto}
+.handle.in-left{left:-7px;right:auto;top:calc(50% - 6px);bottom:auto}
+.handle.in-top{left:calc(50% - 6px);right:auto;top:-7px;bottom:auto}
+.handle.in-bottom{left:calc(50% - 6px);right:auto;top:auto;bottom:-7px}
+.handle.in-right{left:auto;right:-7px;top:calc(75% - 6px);bottom:auto}
+.node.edge-endpoint{outline:2px solid #22c6dc;outline-offset:4px;box-shadow:0 0 0 6px rgba(34,198,220,.16),var(--shadow)}
+.edge.selected{stroke:#22c6dc;stroke-width:4}
+.right{padding:12px;background:#101a27}.right .panel-title{display:flex;align-items:center;gap:12px;font-size:20px;padding:14px;background:#142235;border:1px solid #2a4058;border-radius:12px 12px 0 0}
+.right .panel-sub{display:none}.property-icon{width:38px;height:38px;border-radius:9px;display:inline-grid;place-items:center;background:#e77e0b;color:white;font-size:20px}
+.property-close{margin-left:auto;border:0;background:transparent;color:#b9c8d9;font-size:22px}
+.property-card{border:1px solid #2c425a;border-radius:0 0 12px 12px;padding:14px;background:#111e2d}
+.property-section-title{font-size:14px;font-weight:750;color:#dce7f5;margin:0 0 12px}
+.field{margin:13px 0}.field label{font-size:13px;font-weight:650;color:#e0e9f4}
+.field input,.field select{padding:11px 12px;background:#172638;border:1px solid #3a526d;border-radius:8px;font-size:14px}
+.logic-operator{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #3b5875;border-radius:8px;overflow:hidden}
+.logic-operator button{padding:10px 4px;border:0;border-right:1px solid #3b5875;background:#172638;color:#d9e5f4;font-weight:750}
+.logic-operator button:last-child{border:0}.logic-operator button.active{background:#0966d5;box-shadow:inset 0 0 0 1px #1ba9ff}
+.logic-condition-row{display:flex;align-items:center;gap:9px;padding:9px 8px;margin:5px 0;background:#172638;border:1px solid #30465f;border-radius:8px;font-size:13px}
+.logic-condition-row .grip{color:#91a8c2;font-size:16px}.logic-condition-row .diamond{color:#fff;background:#0874e6;border-radius:6px;padding:5px}
+.logic-condition-row .remove-condition{margin-left:auto;border:0;background:none;color:#aebed0;font-size:18px;cursor:pointer}.logic-condition-list{display:flex;flex-direction:column;gap:4px}.logic-condition-text{flex:1;min-width:0}.logic-empty{padding:12px;color:#8fa4bc;font-size:12px;background:#142235;border:1px dashed #3a526d;border-radius:8px}.property-card .property-section-title{display:none}
+.logic-add{width:100%;padding:10px;border:1px solid #405b78;border-radius:8px;background:#1a2b3e;color:#e1eaf5;font-weight:650;margin-top:6px}
+.logic-description{width:100%;min-height:70px;resize:vertical;padding:10px 12px;background:#172638;border:1px solid #3a526d;border-radius:8px;color:#e7edf7;font:inherit}.right .field>label{display:block;margin:0 0 8px;font-weight:700;color:#e8eef7}.logic-operator{margin-top:2px}.logic-condition-row{min-height:43px}
+@container (max-width:460px){.expression-tree{padding:6px 3px}.expression-group.root{padding:0;border:0;background:transparent}.expression-group.root>.expression-group-content{margin:0}.expression-group-buttons{margin-left:6px}.expression-control-group select:first-child{flex-basis:76px;max-width:76px}}
+
+
+/* Condition panel: dense, one-line rule rows */
+.connected-inputs{padding:8px 9px;margin:8px 0}.connected-inputs .condition-panel-label{font-size:11px;margin-bottom:6px}.connected-input-list{gap:5px;max-height:76px;overflow:auto}.connected-input-chip{padding:3px 6px;font-size:10px;gap:4px}.connected-input-chip .chip-icon{width:16px;height:16px;font-size:9px}.condition-builder{margin:8px 0}.condition-builder-head{padding:7px 9px;gap:5px;font-size:11px}.condition-builder-head .expression-action{font-size:10px}.condition-builder-actions .btn{padding:4px 6px;font-size:10px}.expression-tree{padding:6px}.expression-group{padding:5px 6px 6px 8px;border-radius:7px}.expression-item{margin:4px 0;padding:5px 6px;border-radius:6px}.expression-controls{display:grid;grid-template-columns:34px minmax(0,1fr) 66px minmax(0,1fr) 20px;gap:5px;align-items:center}.expression-rule-meta{display:flex;align-items:center;gap:3px;color:#8fa8c2;font-size:9px;white-space:nowrap}.expression-rule-meta .expression-grip{width:18px;height:18px;flex-basis:18px;font-size:11px}.expression-controls select,.expression-controls input{height:28px;padding:4px 5px;font-size:10px;border-radius:5px}.expression-control-group{gap:3px}.expression-control-group select:first-child{flex:0 0 55px;max-width:55px}.expression-op{height:25px;font-size:10px}.expression-delete{padding:0;font-size:14px;line-height:20px}.expression-joiner{margin:3px 0}.expression-joiner:before{top:-5px;bottom:-5px}.expression-preview{padding:8px;margin:8px 0}.expression-preview .condition-panel-label{font-size:11px;margin-bottom:5px}.expression-preview code{padding:6px 7px;font-size:10px;line-height:1.5}.expression-group-buttons{margin:5px 0 0 8px;gap:4px}.expression-group-buttons button{padding:3px 5px;font-size:9px}.expression-rule-warning{margin-top:4px;font-size:9px}.condition-help{padding:7px 8px;margin:8px 0;font-size:10px}
+@container (max-width:560px){.expression-controls{grid-template-columns:28px minmax(0,1fr) 58px minmax(0,1fr) 18px;gap:3px}.expression-control-group select:first-child{flex-basis:45px;max-width:45px}.expression-controls select,.expression-controls input{font-size:9px;padding:3px}}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">RG</div> RG Labs <span style="color:#50627b">/</span> Strategy Builder</div>
+    <input id="strategyName" class="strategy-name" value="RSI Mean Reversion" aria-label="Strategy name">
+    <span class="pill">Prototype · Paper only</span>
+    <div class="top-spacer"></div>
+    <button class="btn ghost small" id="undoBtn" title="Undo">↶</button>
+    <button class="btn ghost small" id="redoBtn" title="Redo">↷</button>
+    <button class="btn small" id="newBtn">New</button>
+    <button class="btn small" id="saveBtn">Save</button>
+    <button class="btn small" id="exportBtn">Export JSON</button>
+    <div class="panel-toggles" aria-label="Toggle workspace panels">
+      <button class="btn ghost panel-toggle active" data-panel="left" title="Show/hide Elements panel" aria-label="Toggle Elements panel" aria-pressed="true">◧</button>
+      <button class="btn ghost panel-toggle" data-panel="right" title="Show/hide Properties panel" aria-label="Toggle Properties panel" aria-pressed="false">◨</button>
+      <button class="btn ghost panel-toggle active" data-panel="bottom" title="Show/hide Bottom panel" aria-label="Toggle Bottom panel" aria-pressed="true">▤</button>
+    </div>
+    <button class="btn primary" id="runBtn">▶ Validate strategy</button>
+  </header>
+
+  <aside class="left tableau-left">
+    <div class="tabs"><button class="tab active" data-lefttab="elements">Components</button><button class="tab" data-lefttab="templates">Strategy Outline</button></div>
+    <div id="elementsPanel">
+      <input id="paletteSearch" class="search" placeholder="Search components...">
+      <div class="palette-section">
+        <div class="group-title section-toggle" data-section="favorites"><span>⭐</span> Favorites <span class="section-count">3</span><span class="chevron">›</span></div>
+        <div class="section-content favorites-content"><div class="palette-item" draggable="true" data-type="rsi"><span class="ico purple">∿</span><div>RSI</div></div><div class="palette-item" draggable="true" data-type="condition"><span class="ico blue">◇</span><div>Condition</div></div><div class="palette-item" draggable="true" data-type="buy"><span class="ico green">↑</span><div>Buy</div></div></div>
+      </div>
+      <div class="palette-section">
+        <div class="group-title section-toggle open" data-section="indicators"><span class="section-symbol blue">⌁</span> Indicators <span class="chevron">⌄</span></div>
+        <div class="section-content indicator-grid">
+          <div class="palette-item" draggable="true" data-type="rsi"><span class="ico purple">∿</span><div>RSI</div></div>
+          <div class="palette-item" draggable="true" data-type="ema"><span class="ico purple">∿</span><div>EMA</div></div>
+          <div class="palette-item" draggable="true" data-type="ema"><span class="ico purple">∿</span><div>SMA</div></div>
+          <div class="palette-item" draggable="true" data-type="macd"><span class="ico purple">∿</span><div>MACD</div></div>
+          <div class="palette-item" draggable="true" data-type="atr"><span class="ico purple">∿</span><div>ATR</div></div>
+          <div class="palette-item" draggable="true" data-type="bollinger"><span class="ico purple">∿</span><div>Bollinger</div></div>
+          <div class="palette-item" draggable="true" data-type="adx"><span class="ico purple">∿</span><div>ADX</div></div>
+          <div class="palette-item" draggable="true" data-type="macd"><span class="ico purple">∿</span><div>Stochastic</div></div>
+          <div class="palette-item" draggable="true" data-type="atr"><span class="ico purple">∿</span><div>VWAP</div></div>
+          <button class="more-components" type="button" data-more="indicators">＋ More Indicators</button>
+        </div>
+      </div>
+      <div class="palette-section"><div class="group-title section-toggle" data-section="conditions"><span class="section-symbol">◇</span> Conditions <span class="chevron">⌄</span></div><div class="section-content"><div class="palette-item" draggable="true" data-type="condition"><span class="ico blue">◇</span><div>Condition</div></div><div class="palette-item" draggable="true" data-type="condition"><span class="ico blue">⇄</span><div>Crossing</div></div></div></div>
+      <div class="palette-section"><div class="group-title section-toggle" data-section="logic"><span class="section-symbol orange">⌘</span> Logic <span class="chevron">⌄</span></div><div class="section-content"><div class="palette-item" draggable="true" data-type="and"><span class="ico orange">∧</span><div>AND / OR</div></div></div></div>
+      <div class="palette-section"><div class="group-title section-toggle open" data-section="actions"><span class="section-symbol red">◉</span> Actions <span class="chevron">⌃</span></div><div class="section-content action-grid"><div class="palette-item" draggable="true" data-type="buy"><span class="ico green">↑</span><div>Buy</div></div><div class="palette-item" draggable="true" data-type="sell"><span class="ico red">↓</span><div>Sell</div></div><div class="palette-item" draggable="true" data-type="close"><span class="ico slate">−</span><div>Close</div></div><button class="more-components" type="button" data-more="actions">＋ More Actions</button></div></div>
+      <div class="palette-section"><div class="group-title section-toggle open" data-section="risk"><span class="section-symbol shield">⬡</span> Risk Controls <span class="chevron">⌄</span></div><div class="section-content risk-grid"><div class="palette-item" draggable="true" data-type="stoploss"><span class="ico slate">⬡</span><div>Stop Loss</div></div><div class="palette-item" draggable="true" data-type="takeprofit"><span class="ico red">◎</span><div>Take Profit</div></div><div class="palette-item" draggable="true" data-type="stoploss"><span class="ico cyan">⌁</span><div>Trailing SL</div></div><div class="palette-item" draggable="true" data-type="buy"><span class="ico slate">▤</span><div>Position Size</div></div><div class="palette-item" draggable="true" data-type="stoploss"><span class="ico red">▥</span><div>Max Drawdown</div></div><div class="palette-item" draggable="true" data-type="close"><span class="ico slate">◷</span><div>Time Exit</div></div></div></div>
+      <div class="palette-section"><div class="group-title section-toggle" data-section="utilities"><span class="section-symbol">🔧</span> Utilities <span class="chevron">⌄</span></div><div class="section-content"><div class="palette-item" draggable="true" data-type="wait"><span class="ico slate">◷</span><div>Wait / Delay</div></div><div class="palette-item" draggable="true" data-type="start"><span class="ico green">▶</span><div>Start</div></div></div></div>
+    </div>
+    <div id="templatesPanel" style="display:none"><div class="group-title">Starter strategies</div><div class="palette-item template" data-template="rsi"><span class="ico purple">∿</span><div>RSI Mean Reversion<small>RSI oversold / overbought</small></div></div><div class="palette-item template" data-template="ema"><span class="ico blue">⌁</span><div>EMA Crossover<small>Fast EMA crosses slow EMA</small></div></div><p style="color:#8093ad;font-size:12px;line-height:1.6">Load a starter graph, then edit its blocks and connections on the canvas.</p></div>
+  </aside>
+  <div class="col-resize" id="leftResize" role="separator" aria-orientation="vertical" aria-label="Resize elements panel" tabindex="0" title="Drag to resize elements panel"></div>
+
+  <main class="workspace" id="workspace">
+    <div class="canvas-head"><div class="canvas-mode"><button class="active" type="button" id="flowModeBtn">Flow</button><button type="button" id="viewCodeBtn">〈/〉 View Code</button></div><span class="canvas-title">Strategy canvas</span><span class="canvas-hint">Drag an output handle onto any destination block</span><div class="canvas-tools"><button class="btn small" id="tidyBtn" title="Arrange all blocks into a clean top-to-bottom flow">Auto layout</button><button class="btn small" id="fitBtn">Fit</button><button class="btn small" id="zoomOut">−</button><button class="btn small" id="zoomIn">+</button></div></div>
+    <div class="canvas-viewport" id="viewport">
+      <div class="canvas-world" id="world">
+        <svg id="edges" viewBox="0 0 1600 1000" aria-label="Strategy connections"></svg>
+        <div class="drop-hint" id="dropHint"><strong>Build your strategy here</strong>Drag an element from the left panel to get started.</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="col-resize" id="rightResize" role="separator" aria-orientation="vertical" aria-label="Resize properties panel" tabindex="0" title="Drag to resize properties panel"></div>
+
+  <aside class="right">
+    <div class="panel-title" id="propTitle">Block properties</div>
+    <div class="panel-sub" id="propSub">Select a block on the canvas to configure its parameters.</div>
+    <div class="property-id" id="propId" hidden><span class="property-id-label">Block ID</span><code class="property-id-value"></code></div>
+    <div id="properties"><div class="empty-props">◇<br><br>Select a node to view and edit its properties.</div></div>
+  </aside>
+
+  <div class="resize-handle" id="bottomResize" role="separator" aria-orientation="horizontal" aria-label="Resize bottom panel" aria-valuemin="120" aria-valuemax="520" aria-valuenow="205" tabindex="0" title="Drag to resize bottom panel"></div>
+  <section class="bottom">
+    <div class="bottom-tabs">
+      <button class="bottom-tab active" data-bottomtab="logs">Logs</button>
+      <button class="bottom-tab" data-bottomtab="results">Validation</button>
+      <button class="bottom-tab" data-bottomtab="performance">Performance</button>
+      <button class="bottom-tab" data-bottomtab="chart">Chart</button>
+      <button class="bottom-tab" data-bottomtab="code">Python Code</button>
+      <span class="top-spacer"></span><span class="pill" id="nodeCount">0 nodes · 0 connections</span>
+    </div>
+    <div class="bottom-content" id="bottomContent">
+      <div class="log-line"><span class="log-time">Ready</span><span class="dot"></span><span>Strategy Builder initialized. This prototype validates graph structure and previews generated Python. It does not execute trades.</span></div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<div class="modal-backdrop" id="modal"><div class="modal"><h3>Start a new strategy?</h3><p>This will clear the current canvas. Export or save your strategy first if you want to keep it.</p><div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn" id="cancelNew">Cancel</button><button class="btn primary" id="confirmNew">Clear canvas</button></div></div></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const world=$('#world'), viewport=$('#viewport'), svg=$('#edges');
+let nodes=[],edges=[],strategyIR=null,selected=null,selectedEdge=null,connectFrom=null,zoom=1,history=[],historyIndex=-1,dragNode=null,pan=null;
+let activeBottom='logs';
+const INDICATORS=['rsi','ema','macd','bollinger','atr','adx'];
+const ROLES=['long_entry','short_entry','long_exit','short_exit','risk'];
+const ID_PREFIXES={rsi:'rsi',ema:'ema',macd:'macd',bollinger:'bb',atr:'atr',adx:'adx',condition:'cond',and:'logic',buy:'buy',sell:'sell',close:'close',risk:'risk',position:'position',stoploss:'risk',takeprofit:'risk',wait:'wait',end:'end'};
+let idCounters=Object.fromEntries([...new Set(Object.values(ID_PREFIXES))].map(prefix=>[prefix,0]));
+const defaults={
+ start:{title:'Start',sub:'On New Candle',kind:'trigger',icon:'▶',props:{event:'New Candle'}},
+ rsi:{title:'RSI',sub:'Period: 14 · Source: Close',kind:'indicator',icon:'∿',props:{period:14,source:'close'}},
+ ema:{title:'EMA',sub:'Period: 20 · Source: Close',kind:'indicator',icon:'⌁',props:{period:20,source:'close',maType:'EMA'}},
+ macd:{title:'MACD',sub:'12 / 26 / 9',kind:'indicator',icon:'〽',props:{fast:12,slow:26,signal:9,source:'close'}},
+ bollinger:{title:'Bollinger Bands',sub:'Period: 20 · Std: 2',kind:'indicator',icon:'◎',props:{period:20,std:2,source:'close'}},
+ atr:{title:'ATR',sub:'Period: 14',kind:'indicator',icon:'↕',props:{period:14}},
+ adx:{title:'ADX',sub:'Period: 14 · Trend strength',kind:'indicator',icon:'⌁',props:{period:14}},
+ risk:{title:'Risk Rules',sub:'ATR stop · ATR target',kind:'flow',icon:'◈',props:{stop_atr:2,target_atr:3}},
+ position:{title:'Position Manager',sub:'Long / Short state',kind:'flow',icon:'⇄',props:{}},
+ condition:{title:'Condition',sub:'Condition operands',kind:'condition',icon:'◇',props:{left:'',operator:'<',right:30}},
+ and:{title:'Logic',sub:'AND · 2 conditions',kind:'condition',icon:'⌘',props:{label:'Entry Logic',operator:'AND',description:'All three conditions must be true to trigger Buy.'}},
+ wait:{title:'Wait',sub:'1 candle',kind:'flow',icon:'◷',props:{candles:1}},
+ end:{title:'End',sub:'End strategy branch',kind:'flow',icon:'■',props:{}},
+ buy:{title:'Buy',sub:'Market order · Qty: 1',kind:'action-buy',icon:'↑',props:{orderType:'market',quantity:1}},
+ sell:{title:'Sell',sub:'Market order · Qty: 1',kind:'action-sell',icon:'↓',props:{orderType:'market',quantity:1}},
+ close:{title:'Close Position',sub:'Close open position',kind:'flow',icon:'×',props:{percentage:100}},
+ stoploss:{title:'Stop Loss',sub:'1.5% from entry',kind:'flow',icon:'◉',props:{mode:'percent',value:1.5}},
+ takeprofit:{title:'Take Profit',sub:'3% from entry',kind:'flow',icon:'◎',props:{mode:'percent',value:3}}
+};
+const clone=o=>JSON.parse(JSON.stringify(o));
+function idPrefix(type){return ID_PREFIXES[type]}
+function updateCountersFromNodes(graphNodes){
+ graphNodes.forEach(node=>{
+  Object.keys(idCounters).forEach(prefix=>{
+   const match=String(node.id).match(new RegExp('^'+prefix+'_(\\d+)$'));
+   if(match){
+    const value=Number(match[1]);
+    if(!Number.isSafeInteger(value))throw new Error('Component ID counter exceeds the supported numeric range: '+node.id);
+    idCounters[prefix]=Math.max(idCounters[prefix]||0,value);
+   }
+  });
+ });
+}
+function mergeIdCounters(counters={},graphNodes=[]){
+ Object.entries(counters||{}).forEach(([prefix,value])=>{
+  if(Object.prototype.hasOwnProperty.call(idCounters,prefix)&&Number.isSafeInteger(Number(value))&&Number(value)>=0)
+   idCounters[prefix]=Math.max(idCounters[prefix]||0,Number(value));
+ });
+ updateCountersFromNodes(graphNodes);
+ return clone(idCounters);
+}
+function nextId(type,usedNodes=nodes){
+ if(type==='start')return 'start';
+ const prefix=idPrefix(type);
+ if(!prefix)throw new Error('No ID prefix is configured for block type: '+type);
+ updateCountersFromNodes(usedNodes);
+ if(idCounters[prefix]>=Number.MAX_SAFE_INTEGER)throw new Error('No more IDs are available for block type: '+type);
+ let id;
+ do{id=prefix+'_'+(++idCounters[prefix]);}while(usedNodes.some(node=>node.id===id));
+ return id;
+}
+function isActionType(type){return ['buy','sell','close'].includes(type)}
+function isDirectionalType(type){return INDICATORS.includes(type)||type==='condition'||isActionType(type)}
+function inputSide(node){
+ const incoming=edges.find(edge=>edge.to===node.id);
+ return incoming?.toPort==='top'?'top':'left';
+}
+function addNode(type,x,y,props=null,id=null){
+ const d=defaults[type];if(!d)return;
+ if(type==='start'&&nodes.some(n=>n.type==='start')){toast('A Start block already exists.','error');return;}
+ const n={id:id||nextId(type),type,x,y,props:props?clone(props):clone(d.props)};
+ if(id)updateCountersFromNodes([n]);
+ nodes.push(n);renderNode(n);selectNode(n.id);updateCounts();saveHistory();return n;
+}
+function nodeElement(n){return world.querySelector(`[data-node-id="${n.id}"]`)}
+function summary(n){
+ const p=n.props;
+ if(n.type==='rsi')return `Period: ${p.period} · Source: ${p.source}`;
+ if(n.type==='ema')return `${p.maType} · Period: ${p.period} · ${p.source}`;
+ if(n.type==='macd')return `${p.fast} / ${p.slow} / ${p.signal}`;
+ if(n.type==='bollinger')return `Period: ${p.period} · Std: ${p.std}`;
+ if(n.type==='atr')return `Period: ${p.period}`;
+ if(n.type==='condition'){
+  return escapeHTML(conditionExpressionPreview(n)||`${String(p.left??'')} ${p.operator||'>'} ${Array.isArray(p.right)?JSON.stringify(p.right):String(p.right??'')}`);
+ }
+ if(n.type==='and')return `${p.operator} · ${p.count||2} conditions`;
+ if(n.type==='wait')return `${p.candles} candle(s)`;
+ if(n.type==='buy'||n.type==='sell')return `${p.orderType} order · Qty: ${p.quantity}`;
+ if(n.type==='stoploss'||n.type==='takeprofit')return `${p.value}${p.mode==='percent'?'%':' points'} from entry`;
+ if(n.type==='close')return `Close ${p.percentage}% of position`;
+ return defaults[n.type].sub;
+}
+function renderNode(n){
+ let el=nodeElement(n);
+ const isNew=!el;
+ if(isNew){el=document.createElement('div');el.className='node';el.dataset.nodeId=n.id;world.appendChild(el);}
+ const d=defaults[n.type];if(!d)return;
+ el.className='node '+d.kind+(isDirectionalType(n.type)?' directional-ports':'')+(selected===n.id?' selected':'')+(selectedEdge&&(selectedEdge.from===n.id||selectedEdge.to===n.id)?' edge-endpoint':'');el.dataset.type=n.type;
+ el.style.left=n.x+'px';el.style.top=n.y+'px';
+ const inputSides=isDirectionalType(n.type)?['left','top']:['left','top','bottom','right'];
+ const inputHandles=n.type==='start'?'':inputSides.map(side=>`<div class="handle in ${n.type==='condition'?'condition-in ':''}in-${side}" data-handle="in" data-side="${side}" title="${side} input"></div>`).join('');
+ el.innerHTML=`${inputHandles}
+ <div class="node-head"><span class="node-icon">${d.icon}</span><span>${n.props?.label||d.title}</span></div><div class="node-sub">${summary(n)}</div>
+ <div class="node-actions"><button data-action="duplicate" title="Duplicate">＋</button><button data-action="delete" title="Delete">×</button></div>
+ ${n.type==='condition'?'<div class="handle true" data-handle="true" title="YES output"></div><div class="handle false" data-handle="false" title="NO output"></div><span class="branch yes">YES</span><span class="branch no">NO</span>':(!isActionType(n.type)&&n.type!=='end'?'<div class="handle out" data-handle="out"></div>':'')}`;
+ if(isNew){
+   el.addEventListener('pointerdown',e=>onNodePointerDown(e,n));
+   el.addEventListener('pointermove',e=>{
+    if(!isDirectionalType(n.type))return;
+    const rect=el.getBoundingClientRect();
+    const leftDistance=Math.abs(e.clientX-rect.left),topDistance=Math.abs(e.clientY-rect.top);
+    el.dataset.hoverInput=topDistance/rect.height<leftDistance/rect.width?'top':'left';
+   });
+   el.addEventListener('pointerleave',()=>delete el.dataset.hoverInput);
+   el.addEventListener('click',e=>{if(e.target.closest('.node-actions'))return;selectNode(n.id)});
+ }
+ el.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();if(btn.dataset.action==='delete')deleteNode(n.id);else duplicateNode(n.id)}));
+ el.querySelectorAll('.handle').forEach(h=>h.addEventListener('pointerdown',e=>{e.stopPropagation();if(h.dataset.handle==='in'){toast('Start dragging from an output handle.','error');return}startConnectionDrag(e,n.id,h.dataset.handle)}));
+ $('#dropHint').style.display=nodes.length?'none':'block';
+}
+const PRICE_OPERANDS=['open','high','low','close','volume'];
+const CONDITION_OPERATORS=['<','>','<=','>=','==','!=','crosses_above','crosses_below','between','outside'];
+function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function indicatorOutputs(type){return type==='macd'?['macd','signal','histogram']:type==='bollinger'?['upper','middle','lower']:type==='adx'?['value','adx','plus_di','minus_di']:['value']}
+function defaultIndicatorOutput(type){return type==='macd'?'macd':type==='bollinger'?'upper':type==='adx'?'value':'value'}
+function indicatorSettings(node){
+ const p=node.props||{};
+ if(node.type==='rsi'||node.type==='atr'||node.type==='adx')return `${node.type.toUpperCase()} ${p.period??14}`;
+ if(node.type==='ema')return `${p.maType||'EMA'} ${p.period??20}`;
+ if(node.type==='macd')return `MACD ${p.fast??12}/${p.slow??26}/${p.signal??9}`;
+ if(node.type==='bollinger')return `Bollinger ${p.period??20}, ${p.std??2} std`;
+ return defaults[node.type]?.title||node.type;
+}
+function descriptorForOperand(value){
+ if(value===undefined||value===null||value==='')return {kind:'empty',value};
+ if(typeof value==='number'&&Number.isFinite(value))return {kind:'number',value};
+ if(Array.isArray(value))return {kind:'unrecognised',value};
+ if(typeof value!=='string')return {kind:'unrecognised',value};
+ const raw=value.trim(),price=PRICE_OPERANDS.find(item=>item===raw.toLowerCase());
+ if(price)return {kind:'price',value,price};
+ const match=raw.match(/^(.+)\.([^.]+)?$/);
+ if(match){
+  const indicator=nodes.find(item=>item.id===match[1]);
+  if(!indicator)return {kind:'missing-indicator',value,id:match[1],output:match[2]};
+  if(!INDICATORS.includes(indicator.type))return {kind:'unrecognised',value};
+  if(!match[2])return {kind:'indicator-empty',value,id:indicator.id,node:indicator};
+  return {kind:'indicator',value,id:indicator.id,output:match[2],node:indicator,validOutput:indicatorOutputs(indicator.type).includes(match[2])};
+ }
+ const indicator=nodes.find(item=>item.id===raw&&INDICATORS.includes(item.type));
+ if(indicator)return {kind:'indicator-empty',value,id:indicator.id,node:indicator};
+ return {kind:'unrecognised',value};
+}
+function operandReference(value){
+ const descriptor=descriptorForOperand(value);
+ return descriptor.kind==='indicator'?descriptor.id:null;
+}
+function operandText(value){
+ const d=descriptorForOperand(value);
+ if(d.kind==='empty')return 'an unset value';
+ if(d.kind==='number')return String(d.value);
+ if(d.kind==='price')return `${d.price} price`;
+ if(d.kind==='indicator')return `${d.node.type==='ema'?`${d.node.props?.maType||'EMA'}(${d.node.props?.period??20})`:d.node.type==='macd'?'MACD':d.node.type==='bollinger'?'Bollinger Bands':`${d.node.type.toUpperCase()}(${d.node.props?.period??14})`}${d.output==='value'||(d.node.type==='adx'&&d.output==='adx')?'':'.'+d.output}`;
+ if(d.kind==='indicator-empty')return `${d.node.type.toUpperCase()}(${d.node.props?.period??14}) (output not selected)`;
+ return `unrecognised value "${String(value)}"`;
+}
+function conditionWarnings(n){
+ const p=n.props||{},warnings=[],left=descriptorForOperand(p.left),op=p.operator||'>',right=['between','outside'].includes(op)?{kind:'range',value:p.right}:descriptorForOperand(p.right);
+ [left,right].forEach((d,index)=>{
+  const side=index?'Right':'Left';
+  if(d.kind==='empty')warnings.push(`${side} operand is not set.`);
+  else if(d.kind==='missing-indicator')warnings.push(`${side} operand references indicator "${d.id}", which no longer exists.`);
+  else if(d.kind==='indicator-empty')warnings.push(`${side} indicator has no output chosen.`);
+  else if(d.kind==='indicator'&&!d.validOutput)warnings.push(`${side} indicator output "${d.output}" is not recognised for ${d.node.type.toUpperCase()}.`);
+  else if(d.kind==='unrecognised')warnings.push(`${side} operand is unrecognised and has been preserved: ${JSON.stringify(d.value)}.`);
+ });
+ const identical=left.kind===right.kind&&(
+  left.kind==='indicator'&&left.id===right.id&&left.output===right.output||
+  left.kind==='indicator-empty'&&left.id===right.id||
+  left.kind==='missing-indicator'&&left.id===right.id&&left.output===right.output||
+  left.kind==='number'&&left.value===right.value||
+  left.kind==='price'&&left.price===right.price||
+  left.kind==='unrecognised'&&JSON.stringify(left.value)===JSON.stringify(right.value)
+ );
+ if(identical)warnings.push('Left and right operands are identical.');
+ const scaleOf=d=>{
+  if(d.kind==='price')return 'price';
+  if(d.kind!=='indicator')return null;
+  if(d.node.type==='rsi'||d.node.type==='adx')return 'oscillator';
+  if(d.node.type==='ema'||d.node.type==='atr'||d.node.type==='bollinger')return 'price';
+  return d.node.type;
+ };
+ const leftScale=scaleOf(left),rightScale=scaleOf(right);
+ if(leftScale&&rightScale&&leftScale!==rightScale)warnings.push(`Operands use different scales (${leftScale} vs ${rightScale}).`);
+ if((op==='between'||op==='outside')&&(!Array.isArray(p.right)||p.right.length!==2||!p.right.every(Number.isFinite)))warnings.push('Between/outside requires two numeric bounds.');
+ else if((op==='between'||op==='outside')&&p.right[0]>=p.right[1])warnings.push('The between/outside minimum must be less than the maximum.');
+ if(['crosses_above','crosses_below'].includes(op)){
+  const leftChanges=['indicator','price'].includes(left.kind),rightChanges=['indicator','price'].includes(right.kind);
+  const indicatorLevel=(left.kind==='indicator'&&right.kind==='number')||(left.kind==='number'&&right.kind==='indicator');
+  if(!(leftChanges&&rightChanges)&&!indicatorLevel)warnings.push(`${op} requires two changing values, or an indicator compared with a numeric level.`);
+ }
+ if(['==','!='].includes(op)&&(['indicator','indicator-empty','price'].includes(left.kind)||['indicator','indicator-empty','price'].includes(right.kind)))warnings.push(`${op} is not available for decimal-valued price or indicator operands.`);
+ return warnings;
+}
+function conditionSentence(n){
+ const p=n.props||{},left=operandText(p.left),op=p.operator||'>';
+ if(op==='between'||op==='outside'){
+  const bounds=Array.isArray(p.right)?p.right:[];
+  return `True when ${left} is ${op} ${bounds[0]??'…'} and ${bounds[1]??'…'}.`;
+ }
+ const phrases={'<':'is below','>':'is above','<=':'is at most','>=':'is at least','==':'equals','!=':'does not equal',crosses_above:'crosses above',crosses_below:'crosses below'};
+ return `True when ${left} ${phrases[op]||op} ${operandText(p.right)}.`;
+}
+function operatorOptions(n){
+ const p=n.props||{},left=descriptorForOperand(p.left),right=descriptorForOperand(p.right);
+ const leftChanges=['indicator','price'].includes(left.kind),rightChanges=['indicator','price'].includes(right.kind);
+ const indicatorLevel=(left.kind==='indicator'&&right.kind==='number')||(left.kind==='number'&&right.kind==='indicator');
+ const options=['<','>','<=','>='];
+ if((leftChanges&&rightChanges)||indicatorLevel)options.push('crosses_above','crosses_below');
+ if(!['indicator','indicator-empty','price'].includes(left.kind)&&!['indicator','indicator-empty','price'].includes(right.kind))options.push('==','!=');
+ options.push('between','outside');
+ const current=p.operator||'>';
+ if(!options.includes(current))options.push(current);
+ return options;
+}
+function indicatorOptionLabel(node){return `${node.id} (${indicatorSettings(node)})`}
+function renderOperandPicker(n,side){
+ const value=n.props?.[side],d=descriptorForOperand(value),isRight=side==='right',rangeOp=isRight&&['between','outside'].includes(n.props?.operator);
+ const title=side==='left'?'Left operand':'Right operand';
+ if(rangeOp){
+  if(Array.isArray(value)&&value.length===2&&value.every(v=>v===null||Number.isFinite(v))){
+   return `<div class="operand-picker" data-operand-picker="${side}"><div class="operand-heading"><label>${title} · Number range</label></div><div class="operand-value-row"><div class="operand-bound"><label>Minimum</label><input data-range-bound="0" type="number" step="any" aria-label="Minimum value" value="${escapeHTML(value[0]??'')}"></div><div class="operand-bound"><label>Maximum</label><input data-range-bound="1" type="number" step="any" aria-label="Maximum value" value="${escapeHTML(value[1]??'')}"></div></div></div>`;
+  }
+  return `<div class="operand-picker" data-operand-picker="${side}"><div class="operand-heading"><label>${title} · Unrecognised value</label></div><div>${escapeHTML(JSON.stringify(value))}</div><button class="btn small" type="button" data-reset-range="${side}" style="margin-top:8px">Use numeric bounds</button></div>`;
+ }
+ const types=[['empty','Choose type'],['indicator','Indicator'],['price','Price'],['number','Number']];
+ if(!['empty','indicator','indicator-empty','price','number'].includes(d.kind))types.push(['unrecognised','Unrecognised value']);
+ const selectedType=d.kind==='indicator-empty'?'indicator':d.kind==='missing-indicator'||d.kind==='unrecognised'?'unrecognised':d.kind;
+ let body='';
+ if(selectedType==='indicator'){
+  const indicators=nodes.filter(item=>INDICATORS.includes(item.type));
+  const selectedId=d.id||'';
+  let indicatorOptions=`<option value="">Choose indicator</option>`+indicators.map(item=>`<option value="${escapeHTML(item.id)}" ${item.id===selectedId?'selected':''}>${escapeHTML(indicatorOptionLabel(item))}</option>`).join('');
+  if(selectedId&&!indicators.some(item=>item.id===selectedId))indicatorOptions+=`<option value="${escapeHTML(selectedId)}" selected>Missing indicator: ${escapeHTML(selectedId)}</option>`;
+  const indicator=indicators.find(item=>item.id===selectedId),outputs=indicator?indicatorOutputs(indicator.type):[];
+  const selectedOutput=d.output||'';
+  let outputOptions=`<option value="">Choose output</option>`+outputs.map(output=>`<option value="${output}" ${output===selectedOutput?'selected':''}>${output}</option>`).join('');
+  if(selectedOutput&&!outputs.includes(selectedOutput))outputOptions+=`<option value="${escapeHTML(selectedOutput)}" selected>Unrecognised output: ${escapeHTML(selectedOutput)}</option>`;
+  body=`<select data-operand-indicator="${side}" aria-label="${title} indicator">${indicatorOptions}</select><select data-operand-output="${side}" aria-label="${title} output" style="margin-top:7px">${outputOptions}</select>`;
+ }else if(selectedType==='price'){
+  const price=d.price||'close';
+  body=`<select data-operand-price="${side}" aria-label="${title} price field">${PRICE_OPERANDS.map(item=>`<option value="${item}" ${item===price?'selected':''}>${item}</option>`).join('')}</select>`;
+ }else if(selectedType==='number'){
+  body=`<input data-operand-number="${side}" type="number" step="any" aria-label="${title} number" value="${escapeHTML(typeof value==='number'?value:'')}">`;
+ }else if(selectedType==='unrecognised'){
+  body=`<div class="condition-warnings" style="margin:0">Preserved value: ${escapeHTML(JSON.stringify(value))}</div>`;
+ }else{
+  body=`<div style="color:#8194ad;font-size:11px">Choose a value type.</div>`;
+ }
+ return `<div class="operand-picker" data-operand-picker="${side}"><div class="operand-heading"><label>${title}</label><select data-operand-type="${side}" aria-label="${title} type">${types.map(([type,label])=>`<option value="${type}" ${type===selectedType?'selected':''}>${label}</option>`).join('')}</select></div>${body}</div>`;
+}
+function newConditionRule(left='close',operator='>',right=0){
+ return {kind:'rule',id:nextExpressionId('rule'),left,operator,right};
+}
+function nextExpressionId(kind){
+ const prefix=kind+'_',used=new Set();
+ const visit=entry=>{if(!entry||typeof entry!=='object')return;if(entry.id)used.add(String(entry.id));(entry.children||[]).forEach(visit)};
+ nodes.filter(node=>node.type==='condition').forEach(node=>visit(node.props?.expression));
+ let i=1;while(used.has(prefix+i))i++;
+ return prefix+i;
+}
+function getConditionExpression(n){
+ const expression=n.props?.expression;
+ if(expression?.kind==='group'&&Array.isArray(expression.children)&&Array.isArray(expression.operators))return expression;
+ return {kind:'group',id:'root',children:[{kind:'rule',id:'rule_legacy',left:n.props?.left??'',operator:n.props?.operator||'>',right:n.props?.right}],operators:[]};
+}
+function ensureConditionExpression(n){
+ if(n.props?.expression?.kind==='group'&&Array.isArray(n.props.expression.children)){
+  const normalize=group=>{
+   group.operators=Array.isArray(group.operators)?group.operators:[];
+   group.children.forEach(child=>{
+    if(child.kind==='group')normalize(child);
+    else if(child.kind==='rule'&&!child.id)child.id=nextExpressionId('rule');
+   });
+   group.operators=group.children.slice(1).map((_,index)=>['AND','OR','NOT'].includes(group.operators[index])?group.operators[index]:'AND');
+  };
+  normalize(n.props.expression);
+  return n.props.expression;
+ }
+ n.props.expression=getConditionExpression(n);
+ return n.props.expression;
+}
+function expressionRules(entry,out=[]){
+ if(!entry||typeof entry!=='object')return out;
+ if(entry.kind==='rule'){out.push(entry);return out}
+ (entry.children||[]).forEach(child=>expressionRules(child,out));
+ return out;
+}
+function connectedConditionIndicators(n){
+ return [...new Set(edges.filter(edge=>edge.to===n.id).map(edge=>nodes.find(node=>node.id===edge.from)).filter(node=>node&&INDICATORS.includes(node.type)))];
+}
+function conditionOperandType(value){
+ const d=descriptorForOperand(value);
+ return d.kind==='indicator'||d.kind==='indicator-empty'?'indicator':d.kind==='price'?'price':d.kind==='number'?'number':d.kind==='empty'?'empty':'unrecognised';
+}
+function expressionOperandControl(n,rule,side){
+ const value=rule[side],type=conditionOperandType(value),connected=connectedConditionIndicators(n),title=side==='left'?'Left operand':'Right operand';
+ if(side==='right'&&['between','outside'].includes(rule.operator)){
+  if(!Array.isArray(value)||value.length!==2)return `<span class="expression-invalid">${escapeHTML(JSON.stringify(value))}</span>`;
+  return `<span class="expression-control-group"><input data-rule-bound="0" data-rule-id="${escapeHTML(rule.id)}" aria-label="Minimum" type="number" step="any" value="${escapeHTML(value[0]??'')}"><input data-rule-bound="1" data-rule-id="${escapeHTML(rule.id)}" aria-label="Maximum" type="number" step="any" value="${escapeHTML(value[1]??'')}"></span>`;
+ }
+ if(type==='unrecognised')return `<span class="expression-control-group"><select data-rule-type="${escapeHTML(rule.id)}" data-side="${side}" aria-label="${title} type"><option value="unrecognised" selected>Unrecognised value</option><option value="indicator">Indicator</option><option value="price">Price</option><option value="number">Number</option></select><span class="expression-invalid" title="Preserved value">${escapeHTML(JSON.stringify(value))}</span></span>`;
+ const typeSelect=`<select data-rule-type="${escapeHTML(rule.id)}" data-side="${side}" aria-label="${title} type"><option value="empty" ${type==='empty'?'selected':''}>Choose</option><option value="indicator" ${type==='indicator'?'selected':''}>Indicator</option><option value="price" ${type==='price'?'selected':''}>Price</option><option value="number" ${type==='number'?'selected':''}>Number</option></select>`;
+ if(type==='indicator'){
+  const d=descriptorForOperand(value),id=d.id||'',indicator=connected.find(item=>item.id===id);
+  let indicatorOptions=`<option value="">Choose indicator/output</option>`;
+  connected.forEach(item=>{
+   indicatorOutputs(item.type).forEach(output=>{
+    const optionValue=`${item.id}.${output}`;
+    indicatorOptions+=`<option value="${escapeHTML(optionValue)}" title="${escapeHTML(`${indicatorOptionLabel(item)} · ${output}`)}" ${value===optionValue?'selected':''}>${escapeHTML(`${item.id} · ${output}`)}</option>`;
+   });
+  });
+  if(d.kind==='indicator-empty')indicatorOptions+=`<option value="${escapeHTML(id)}" selected>${escapeHTML(`${id} · choose output`)}</option>`;
+  else if(d.kind==='missing-indicator')indicatorOptions+=`<option value="${escapeHTML(value)}" selected>${escapeHTML(`Missing: ${value}`)}</option>`;
+  else if(indicator&&d.kind==='indicator'&&!d.validOutput)indicatorOptions+=`<option value="${escapeHTML(value)}" selected>${escapeHTML(`${indicatorOptionLabel(indicator)} · unknown output ${d.output}`)}</option>`;
+  return `<span class="expression-control-group">${typeSelect}<select data-rule-indicator-output="${escapeHTML(rule.id)}" data-side="${side}" aria-label="${title} indicator and output">${indicatorOptions}</select></span>`;
+ }
+ if(type==='price'){
+  const price=descriptorForOperand(value).price||'close';
+  return `<span class="expression-control-group">${typeSelect}<select data-rule-price="${escapeHTML(rule.id)}" data-side="${side}" aria-label="${title} price">${PRICE_OPERANDS.map(item=>`<option value="${item}" ${item===price?'selected':''}>${item}</option>`).join('')}</select></span>`;
+ }
+ if(type==='number')return `<span class="expression-control-group">${typeSelect}<input data-rule-number="${escapeHTML(rule.id)}" data-side="${side}" aria-label="${title} number" type="number" step="any" value="${escapeHTML(value)}"></span>`;
+ return `<span class="expression-control-group">${typeSelect}</span>`;
+}
+function renderConditionExpressionItem(n,entry,depth=0,parentId='root'){
+ if(entry.kind==='rule'){
+  const warnings=conditionWarnings({props:entry});
+  const warn=warnings.length?`<div class="expression-rule-warning">${warnings.map(message=>`<div>⚠ ${escapeHTML(message)}</div>`).join('')}</div>`:'';
+  const ruleNumber=expressionRules(getConditionExpression(n)).indexOf(entry)+1;
+  return `<div class="expression-item expression-rule" data-expression-item="${escapeHTML(entry.id)}" data-parent-group="${escapeHTML(parentId)}"><div class="expression-controls"><span class="expression-rule-meta"><span class="expression-grip" title="Drag to reorder or move" aria-label="Drag rule">⠿</span><span>R${ruleNumber}</span></span><span class="expression-source">${expressionOperandControl(n,entry,'left')}</span><select data-rule-operator="${escapeHTML(entry.id)}" aria-label="Rule operator">${operatorOptions({props:entry}).map(op=>`<option value="${escapeHTML(op)}" ${entry.operator===op?'selected':''}>${escapeHTML(op)}</option>`).join('')}</select><span class="expression-target">${expressionOperandControl(n,entry,'right')}</span><button type="button" class="expression-delete" data-remove-expression="${escapeHTML(entry.id)}" aria-label="Remove rule">×</button></div>${warn}</div>`;
+ }
+ return renderConditionGroup(n,entry,depth,parentId);
+}
+function renderConditionGroup(n,group,depth=0,parentId=''){
+ const children=group.children||[],isRoot=depth===0;
+ const body=children.map((child,index)=>{
+  return `${index?`<div class="expression-joiner"><button type="button" class="expression-op" data-group-id="${escapeHTML(group.id)}" data-joiner-index="${index-1}" data-operator="${escapeHTML(group.operators?.[index-1]||'AND')}">${escapeHTML(group.operators?.[index-1]||'AND')}</button></div>`:''}${renderConditionExpressionItem(n,child,depth+1,group.id)}`;
+ }).join('')||'<div class="expression-empty">Add a rule or group to build this expression.</div>';
+ return `<div class="expression-group ${isRoot?'root':'nested'}" data-expression-group="${escapeHTML(group.id)}" data-parent-group="${escapeHTML(parentId)}">${isRoot?'':`<div class="expression-group-head"><span class="expression-grip" title="Drag group" aria-label="Drag group">⠿</span><span class="folder">▰</span><span>${escapeHTML(group.title||'Group')}</span><span class="spacer"></span><button type="button" class="expression-action" data-toggle-group="${escapeHTML(group.id)}" title="Collapse group">⌃</button><button type="button" class="expression-delete" data-remove-expression="${escapeHTML(group.id)}" aria-label="Remove group">×</button></div>`}<div class="expression-group-content">${body}</div><div class="expression-group-buttons"><button type="button" class="btn small" data-add-rule="${escapeHTML(group.id)}">＋ Add Rule</button><button type="button" class="btn small" data-add-group="${escapeHTML(group.id)}">▰ Add Group</button></div></div>`;
+}
+function expressionOperandLabel(value){
+ const d=descriptorForOperand(value);
+ if(d.kind==='indicator')return indicatorOptionLabel(d.node).replace(/\s+\(/,' (').replace(/\)$/,')');
+ if(d.kind==='price')return value[0].toUpperCase()+value.slice(1);
+ if(d.kind==='number')return String(value);
+ return String(value??'?');
+}
+function expressionRuleText(rule){
+ const op=rule.operator||'>';
+ if(op==='between'||op==='outside')return `${expressionOperandLabel(rule.left)} ${op} ${Array.isArray(rule.right)?`${rule.right[0]} and ${rule.right[1]}`:String(rule.right)}`;
+ return `${expressionOperandLabel(rule.left)} ${op} ${expressionOperandLabel(rule.right)}`;
+}
+function conditionExpressionText(group,wrap=false){
+ const parts=(group.children||[]).map((child,index)=>({index,text:child.kind==='rule'?expressionRuleText(child):conditionExpressionText(child,true)})).filter(part=>part.text);
+ let expression=parts[0]?.text||'';
+ for(let i=1;i<parts.length;i++){
+  const operator=group.operators?.[parts[i].index-1]||'AND';
+  expression+=operator==='NOT'?` AND NOT (${parts[i].text})`:` ${operator} ${parts[i].text}`;
+ }
+ return wrap&&expression?`(${expression})`:expression;
+}
+function conditionExpressionPreview(n){return conditionExpressionText(getConditionExpression(n))}
+function conditionExpressionWarnings(n){
+ const root=getConditionExpression(n),messages=[];
+ expressionRules(root).forEach((rule,index)=>conditionWarnings({props:rule}).forEach(message=>messages.push(`Rule ${index+1}: ${message}`)));
+ return [...new Set(messages)];
+}
+function syncLegacyConditionFields(n){
+ const rules=expressionRules(n.props.expression);
+ if(rules.length){
+  n.props.left=rules[0].left;
+  n.props.operator=rules[0].operator;
+  n.props.right=rules[0].right;
+ }
+}
+function findExpressionNode(root,id){
+ if(root?.id===id)return {entry:root,parent:null,index:-1};
+ const visit=(group,parent=null)=>{
+  for(let i=0;i<(group.children||[]).length;i++){
+   const child=group.children[i];
+   if(child.id===id)return {entry:child,parent:group,index:i};
+   if(child.kind==='group'){const found=visit(child,group);if(found)return found}
+  }
+  return null;
+ };
+ return root?.kind==='group'?visit(root):null;
+}
+function conditionRootGroup(n){return ensureConditionExpression(n)}
+function renderConditionBuilder(n){
+ const connected=connectedConditionIndicators(n),root=conditionRootGroup(n);
+ connected.forEach(item=>{
+  const referenced=expressionRules(root).some(rule=>['left','right'].some(side=>operandReference(rule[side])===item.id));
+  if(!referenced){
+   const value=`${item.id}.${defaultIndicatorOutput(item.type)}`,rule=newConditionRule(value,'>',0);
+   rule._autoConnectedIndicator=item.id;
+   if(root.children.length)root.operators.push('AND');
+   root.children.push(rule);
+   n.props._wireOperands={...(n.props._wireOperands||{}),[`${rule.id}:left`]:{id:item.id,value}};
+  }
+ });
+ syncLegacyConditionFields(n);
+ const warnings=conditionExpressionWarnings(n);
+ const chips=connected.map(item=>`<span class="connected-input-chip" data-connected-indicator="${escapeHTML(item.id)}" title="Drag ${escapeHTML(item.id)} into a rule"><span class="expression-grip" aria-hidden="true">⠿</span><span class="chip-icon">${escapeHTML(defaults[item.type].icon)}</span>${escapeHTML(`${item.id} (${item.type==='ema'?`${item.props?.maType||'EMA'} ${item.props?.period??20}`:item.type==='macd'?'MACD':item.type==='bollinger'?`Bollinger ${item.props?.period??20}`:`${item.type.toUpperCase()} ${item.props?.period??14}`})`)}</span>`).join('');
+ return `<div class="connected-inputs"><div class="condition-panel-label">Connected Inputs <small>(${connected.length})</small></div><div class="connected-input-list">${chips||'<span class="connected-input-empty">Connect indicator blocks to this Condition to make them available as rule inputs.</span>'}</div></div><div class="condition-builder"><div class="condition-builder-head">Condition Builder <span class="spacer"></span><button type="button" class="expression-action" data-expand-all>Expand All</button><button type="button" class="expression-action" data-collapse-all>Collapse All</button><div class="condition-builder-actions"><button type="button" class="btn small" data-add-root-group>▰ Add Group</button><button type="button" class="btn small" data-add-root-rule>＋ Add Rule</button></div></div><div class="expression-tree">${renderConditionGroup(n,root)}</div></div><div class="expression-preview"><div class="condition-panel-label">Expression Preview</div><code data-expression-preview>${escapeHTML(conditionExpressionPreview(n)||'Add rules to preview the expression.')}</code></div><div class="condition-warnings" data-expression-warnings>${warnings.map(message=>`<div>⚠ ${escapeHTML(message)}</div>`).join('')}</div><div class="condition-help"><span class="info">ⓘ</span><span>Drag a connected input by its grip onto a rule operand. Drag a rule onto another rule to combine both inside a new indented AND group; drop a rule on a group header to nest it, or onto the parent group to move it back out. Click inline AND, OR, or NOT to change the expression.</span></div>`;
+}
+function updateConditionBuilder(n){
+ syncLegacyConditionFields(n);
+ renderNode(n);renderProperties(n);renderEdges();saveHistory();
+ if(activeBottom==='results')renderBottom();
+}
+function refreshConditionBuilder(n){
+ syncLegacyConditionFields(n);
+ const preview=$('#properties [data-expression-preview]'),warnings=$('#properties [data-expression-warnings]');
+ if(preview)preview.textContent=conditionExpressionPreview(n)||'Add rules to preview the expression.';
+ if(warnings)warnings.innerHTML=conditionExpressionWarnings(n).map(message=>`<div>⚠ ${escapeHTML(message)}</div>`).join('');
+ renderNode(n);
+ if(activeBottom==='results')renderBottom();
+}
+function removeExpressionItem(root,id){
+ const found=findExpressionNode(root,id);
+ if(!found||!found.parent)return false;
+ found.parent.children.splice(found.index,1);
+ if(found.index>0)found.parent.operators.splice(found.index-1,1);
+ else if(found.parent.operators.length)found.parent.operators.shift();
+ return true;
+}
+function expressionContains(root,needle){
+ if(root.id===needle)return true;
+ return (root.children||[]).some(child=>child.id===needle||(child.kind==='group'&&expressionContains(child,needle)));
+}
+function groupExpressionRules(root,movingId,targetRuleId){
+ const moving=findExpressionNode(root,movingId),target=findExpressionNode(root,targetRuleId);
+ if(!moving?.parent||moving.entry.kind!=='rule'||!target?.parent||target.entry.kind!=='rule'||movingId===targetRuleId)return false;
+ const targetEntry=target.entry;
+ removeExpressionItem(root,movingId);
+ const refreshed=findExpressionNode(root,targetRuleId);
+ if(!refreshed?.parent)return false;
+ const groupId=nextExpressionId('group');
+ const grouped={kind:'group',id:groupId,title:`Group ${groupId.slice(6)}`,children:[targetEntry,moving.entry],operators:['AND']};
+ refreshed.parent.children.splice(refreshed.index,1,grouped);
+ return true;
+}
+function normalizeExpressionGroups(group){
+ if(!group||group.kind!=='group')return false;
+ let changed=false;
+ for(let i=0;i<group.children.length;i++){
+  const child=group.children[i];
+  if(child.kind!=='group')continue;
+  if(normalizeExpressionGroups(child))changed=true;
+  if(child.children.length===1){
+   group.children[i]=child.children[0];
+   changed=true;
+  }else if(child.children.length===0){
+   group.children.splice(i,1);
+   if(i>0)group.operators.splice(i-1,1);
+   else if(group.operators.length)group.operators.shift();
+   i--;
+   changed=true;
+  }
+ }
+ return changed;
+}
+function moveExpressionItem(root,itemId,targetGroupId,targetItemId,after){
+ const moving=findExpressionNode(root,itemId),targetGroup=findExpressionNode(root,targetGroupId);
+ if(!moving?.parent||!targetGroup?.entry||targetGroup.entry.kind!=='group'||itemId===targetGroupId||targetItemId===itemId)return false;
+ if(moving.entry.kind==='group'&&expressionContains(moving.entry,targetGroupId))return false;
+ const targetItem=targetItemId?findExpressionNode(root,targetItemId):null;
+ if(targetItem&&targetItem.parent!==targetGroup.entry)return false;
+ const item=moving.entry,oldParent=moving.parent,oldIndex=moving.index;
+ oldParent.children.splice(oldIndex,1);
+ if(oldIndex>0)oldParent.operators.splice(oldIndex-1,1);
+ else if(oldParent.operators.length)oldParent.operators.shift();
+ const destination=findExpressionNode(root,targetGroupId)?.entry;
+ if(!destination||destination.kind!=='group')return false;
+ let insertAt=destination.children.length;
+ if(targetItemId){
+  const index=destination.children.findIndex(child=>child.id===targetItemId);
+  if(index<0)return false;
+  insertAt=index+(after?1:0);
+ }
+ destination.children.splice(insertAt,0,item);
+ if(destination.children.length>1){
+  const joinerIndex=insertAt===0?0:insertAt-1;
+  destination.operators.splice(joinerIndex,0,'AND');
+ }
+ normalizeExpressionGroups(root);
+ return true;
+}
+function wireConditionBuilderEvents(n){
+ const panel=$('#properties'),getRoot=()=>ensureConditionExpression(n),commit=()=>updateConditionBuilder(n);
+ if(panel._conditionBuilderPointerDown)panel.removeEventListener('pointerdown',panel._conditionBuilderPointerDown);
+ const ruleById=id=>expressionRules(getRoot()).find(rule=>rule.id===id);
+ panel.querySelectorAll('[data-add-root-rule],[data-add-rule]').forEach(button=>button.addEventListener('click',()=>{
+  const groupId=button.dataset.addRootRule!==undefined?'root':button.dataset.addRule,group=findExpressionNode(getRoot(),groupId)?.entry;
+  if(!group||group.kind!=='group')return;
+  if(group.children.length)group.operators.push('AND');
+  group.children.push(newConditionRule());commit();
+ }));
+ panel.querySelectorAll('[data-add-root-group],[data-add-group]').forEach(button=>button.addEventListener('click',()=>{
+  const groupId=button.dataset.addRootGroup!==undefined?'root':button.dataset.addGroup,group=findExpressionNode(getRoot(),groupId)?.entry;
+  if(!group||group.kind!=='group')return;
+  if(group.children.length)group.operators.push('AND');
+  const id=nextExpressionId('group');
+  group.children.push({kind:'group',id,title:`Group ${id.slice(6)}`,children:[],operators:[]});commit();
+ }));
+ panel.querySelectorAll('[data-remove-expression]').forEach(button=>button.addEventListener('click',()=>{
+  const root=getRoot();if(removeExpressionItem(root,button.dataset.removeExpression))commit();
+ }));
+ panel.querySelectorAll('[data-group-id][data-joiner-index]').forEach(button=>button.addEventListener('click',()=>{
+  const group=findExpressionNode(getRoot(),button.dataset.groupId)?.entry,index=Number(button.dataset.joinerIndex);
+  if(!group||group.kind!=='group')return;
+  const cycle=['AND','OR','NOT'],current=group.operators[index]||'AND';
+  group.operators[index]=cycle[(cycle.indexOf(current)+1)%cycle.length];commit();
+ }));
+ panel.querySelectorAll('[data-rule-type]').forEach(select=>select.addEventListener('change',()=>{
+  const rule=ruleById(select.dataset.ruleType),side=select.dataset.side,type=select.value;
+  if(!rule||type==='unrecognised')return;
+  if(type==='indicator'){
+   const first=connectedConditionIndicators(n)[0];
+   rule[side]=first?`${first.id}.${defaultIndicatorOutput(first.type)}`:'';
+  }else if(type==='price')rule[side]='close';
+  else if(type==='number')rule[side]=0;
+  else rule[side]='';
+  commit();
+ }));
+ panel.querySelectorAll('[data-rule-indicator-output]').forEach(select=>select.addEventListener('change',()=>{
+  const rule=ruleById(select.dataset.ruleIndicatorOutput);
+  if(rule){rule[select.dataset.side]=select.value;commit()}
+ }));
+ panel.querySelectorAll('[data-rule-price]').forEach(select=>select.addEventListener('change',()=>{
+  const rule=ruleById(select.dataset.rulePrice);if(rule){rule[select.dataset.side]=select.value;commit()}
+ }));
+ panel.querySelectorAll('[data-rule-number]').forEach(input=>{
+  const update=()=>{const rule=ruleById(input.dataset.ruleNumber);if(rule){rule[input.dataset.side]=input.value===''?'':Number(input.value);refreshConditionBuilder(n)}};
+  input.addEventListener('input',update);
+  input.addEventListener('change',()=>setTimeout(commit,0));
+ });
+ panel.querySelectorAll('[data-rule-bound]').forEach(input=>{
+  const update=()=>{const rule=ruleById(input.dataset.ruleId);if(!rule)return;if(!Array.isArray(rule.right))rule.right=[null,null];rule.right[Number(input.dataset.ruleBound)]=input.value===''?null:Number(input.value);refreshConditionBuilder(n)};
+  input.addEventListener('input',update);
+  input.addEventListener('change',()=>setTimeout(commit,0));
+ });
+ panel.querySelectorAll('[data-rule-operator]').forEach(select=>select.addEventListener('change',()=>{
+  const rule=ruleById(select.dataset.ruleOperator);if(!rule)return;
+  if(['between','outside'].includes(select.value)&&!Array.isArray(rule.right))rule.right=[0,0];
+  else if(!['between','outside'].includes(select.value)&&Array.isArray(rule.right))rule.right=rule.right[0]??0;
+  rule.operator=select.value;commit();
+ }));
+ panel.querySelectorAll('[data-toggle-group]').forEach(button=>button.addEventListener('click',()=>{
+  const group=button.closest('.expression-group');group.classList.toggle('is-collapsed');
+  button.textContent=group.classList.contains('is-collapsed')?'⌄':'⌃';
+ }));
+ panel.querySelector('[data-expand-all]')?.addEventListener('click',()=>panel.querySelectorAll('.expression-group').forEach(group=>group.classList.remove('is-collapsed')));
+ panel.querySelector('[data-collapse-all]')?.addEventListener('click',()=>panel.querySelectorAll('.expression-group.nested').forEach(group=>group.classList.add('is-collapsed')));
+ let pointerDrag=null,dragGhost=null,highlightedTarget=null;
+ const scrollArea=panel.closest('.right');
+ const getDragPoint=event=>{
+  if(scrollArea){
+   const bounds=scrollArea.getBoundingClientRect(),edge=42,step=8,max=scrollArea.scrollHeight-scrollArea.clientHeight;
+   if(event.clientY<bounds.top+edge&&scrollArea.scrollTop>0)scrollArea.scrollTop=Math.max(0,scrollArea.scrollTop-step);
+   else if(event.clientY>bounds.bottom-edge&&scrollArea.scrollTop<max)scrollArea.scrollTop=Math.min(max,scrollArea.scrollTop+step);
+   return {x:Math.min(bounds.right-2,Math.max(bounds.left+2,event.clientX)),y:Math.min(bounds.bottom-2,Math.max(bounds.top+2,event.clientY))};
+  }
+  return {x:event.clientX,y:event.clientY};
+ };
+ const clearDragHighlights=()=>panel.querySelectorAll('.drop-target,.drag-target,.drop-before,.drop-after').forEach(item=>item.classList.remove('drop-target','drag-target','drop-before','drop-after'));
+ const resolveDropTarget=(x,y,sourceKind,sourceId)=>{
+  const under=document.elementFromPoint(x,y);
+  if(!under||!panel.contains(under))return null;
+  const slot=under.closest('.expression-source,.expression-target');
+  const rule=under.closest('[data-expression-item]');
+  const group=under.closest('.expression-group');
+  if(sourceKind==='indicator'){
+   if(slot)return {kind:'slot',slot,rule:slot.closest('[data-expression-item]')};
+   if(rule)return {kind:'rule',rule};
+   if(group)return {kind:'group',group};
+   return null;
+  }
+  const groupHeader=under.closest('.expression-group-head');
+  if(groupHeader&&group?.classList.contains('nested')){
+   const moving=findExpressionNode(getRoot(),sourceId)?.entry;
+   return moving?.kind==='group'?{kind:'group-sibling',group}:{kind:'group',group};
+  }
+  if(rule){
+   if(sourceKind==='expression'){
+    const moving=findExpressionNode(getRoot(),sourceId)?.entry;
+    const targetRule=findExpressionNode(getRoot(),rule.dataset.expressionItem)?.entry;
+    if(moving?.kind==='rule'&&targetRule?.kind==='rule')return {kind:'group-rules',rule};
+   }
+   return {kind:'rule',rule};
+  }
+  if(group)return {kind:'group',group};
+  return null;
+ };
+ const paintDragTarget=(target,x,y)=>{
+  clearDragHighlights();highlightedTarget=target;
+  if(!target)return;
+  if(target.kind==='slot'){target.slot.classList.add('drop-target');return}
+  const element=target.rule||target.group;
+  if(!element)return;
+  if(target.kind==='rule'||target.kind==='group-sibling'){
+   const box=element.getBoundingClientRect();
+   element.classList.add(y>box.top+box.height/2?'drop-after':'drop-before');
+  }else element.classList.add('drag-target');
+ };
+ const finishPointerDrag=event=>{
+  if(!pointerDrag)return;
+  if(pointerDrag.started){
+   const point=getDragPoint(event),target=resolveDropTarget(point.x,point.y,pointerDrag.kind,pointerDrag.id);
+   if(target&&pointerDrag.kind==='expression'){
+    const itemId=pointerDrag.id;
+    if(target.kind==='group-rules'){
+     if(groupExpressionRules(getRoot(),itemId,target.rule.dataset.expressionItem))commit();
+    }else{
+    let targetGroupId,targetItemId,after=false;
+    if(target.kind==='rule'){
+     targetGroupId=target.rule.dataset.parentGroup;
+     targetItemId=target.rule.dataset.expressionItem;
+     const box=target.rule.getBoundingClientRect();after=point.y>box.top+box.height/2;
+    }else if(target.kind==='group-sibling'){
+     targetGroupId=target.group.dataset.parentGroup||'root';
+     targetItemId=target.group.dataset.expressionGroup;
+     const box=target.group.getBoundingClientRect();after=point.y>box.top+box.height/2;
+    }else{
+     targetGroupId=target.group.dataset.expressionGroup;
+    }
+    if(targetGroupId&&moveExpressionItem(getRoot(),itemId,targetGroupId,targetItemId,after))commit();
+    }
+   }else if(target&&pointerDrag.kind==='indicator'){
+    const indicator=connectedConditionIndicators(n).find(item=>item.id===pointerDrag.id);
+    if(indicator){
+     const value=`${indicator.id}.${defaultIndicatorOutput(indicator.type)}`;
+     const targetRule=target.rule;
+     if(targetRule){
+      const rule=ruleById(targetRule.dataset.expressionItem);
+      if(rule){
+       let side=target.kind==='slot'?(target.slot.classList.contains('expression-target')?'right':'left'):'';
+       if(!side)side=['left','right'].find(key=>rule[key]===undefined||rule[key]===null||rule[key]==='')||'left';
+       if(side==='right'&&['between','outside'].includes(rule.operator))rule.operator='>';
+       rule[side]=value;
+       const marker=`${rule.id}:${side}`;
+       if(n.props?._wireOperands?.[marker])delete n.props._wireOperands[marker];
+       if(n.props?._wireOperands&&!Object.keys(n.props._wireOperands).length)delete n.props._wireOperands;
+       commit();
+      }
+     }else if(target.group){
+      const group=findExpressionNode(getRoot(),target.group.dataset.expressionGroup)?.entry;
+      if(group&&group.kind==='group'){
+       if(group.children.length)group.operators.push('AND');
+       group.children.push(newConditionRule(value,'>',0));commit();
+      }
+     }
+    }
+   }
+  }
+  window.removeEventListener('pointermove',movePointerDrag,true);
+  window.removeEventListener('pointerup',finishPointerDrag,true);
+  window.removeEventListener('pointercancel',finishPointerDrag,true);
+  pointerDrag.source.classList.remove('dragging');
+  dragGhost?.remove();dragGhost=null;pointerDrag=null;clearDragHighlights();highlightedTarget=null;
+ };
+ const movePointerDrag=event=>{
+  if(!pointerDrag)return;
+  if(!pointerDrag.started){
+   if(Math.hypot(event.clientX-pointerDrag.x,event.clientY-pointerDrag.y)<6)return;
+   pointerDrag.started=true;
+   pointerDrag.source.classList.add('dragging');
+   dragGhost=document.createElement('div');dragGhost.className='condition-drag-ghost';dragGhost.textContent=pointerDrag.label;document.body.appendChild(dragGhost);
+  }
+  event.preventDefault();
+  const point=getDragPoint(event);
+  dragGhost.style.left=point.x+'px';dragGhost.style.top=point.y+'px';
+  paintDragTarget(resolveDropTarget(point.x,point.y,pointerDrag.kind,pointerDrag.id),point.x,point.y);
+ };
+ const startPointerDrag=event=>{
+  if(event.button!==0)return;
+  const chip=event.target.closest('[data-connected-indicator]');
+  if(chip){
+   if(!event.target.closest('.expression-grip'))return;
+   pointerDrag={kind:'indicator',id:chip.dataset.connectedIndicator,source:chip,x:event.clientX,y:event.clientY,label:`Indicator · ${chip.textContent.replace(/\s+/g,' ').trim()}`};
+  }else{
+   const grip=event.target.closest('.expression-grip');
+   const source=grip?.closest('[data-expression-item],.expression-group.nested');
+   if(!source)return;
+   pointerDrag={kind:'expression',id:source.dataset.expressionItem||source.dataset.expressionGroup,source,x:event.clientX,y:event.clientY,label:source.querySelector('.expression-rule-title span:nth-child(2),.expression-group-head span:nth-of-type(3)')?.textContent.trim()||'Condition item'};
+  }
+  event.preventDefault();
+  window.addEventListener('pointermove',movePointerDrag,true);
+  window.addEventListener('pointerup',finishPointerDrag,true);
+  window.addEventListener('pointercancel',finishPointerDrag,true);
+ };
+ panel._conditionBuilderPointerDown=startPointerDrag;
+ panel.addEventListener('pointerdown',startPointerDrag);
+}
+// The canvas grows with the strategy so large graphs are never clipped.
+function ensureWorldSize(){
+ let maxX=0,maxY=0;nodes.forEach(n=>{maxX=Math.max(maxX,n.x+190);maxY=Math.max(maxY,n.y+130)});
+ const w=Math.max(1600,maxX+300),h=Math.max(1000,maxY+300);
+ world.style.width=w+'px';world.style.height=h+'px';
+ svg.style.width=w+'px';svg.style.height=h+'px';svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+}
+function renderEdges(){
+ ensureWorldSize();
+ svg.innerHTML='';
+ if(selectedEdge&&!edges.includes(selectedEdge))selectedEdge=null;
+ const byId=new Map(nodes.map(n=>[n.id,n]));
+ const nodeW=190;
+ nodes.forEach(n=>{
+  const el=nodeElement(n);
+  if(!el)return;
+  el.classList.toggle('edge-endpoint',!!selectedEdge&&(selectedEdge.from===n.id||selectedEdge.to===n.id));
+  const incoming=edges.find(edge=>edge.to===n.id);
+  el.classList.toggle('has-incoming',!!incoming);
+  if(isDirectionalType(n.type)&&incoming)el.dataset.inputSide=inputSide(n);
+  else delete el.dataset.inputSide;
+  el.classList.toggle('input-top',isDirectionalType(n.type)&&inputSide(n)==='top');
+ });
+ const sourcePoint=(node,edge)=>{
+  const el=nodeElement(node),height=el?.offsetHeight||82;
+  if(isDirectionalType(node.type)&&inputSide(node)==='top'){
+   if(node.type==='condition')return {x:node.x+nodeW*(edge.fromPort==='false'?.64:.36),y:node.y+height,side:'bottom'};
+   return {x:node.x+nodeW/2,y:node.y+height,side:'bottom'};
+  }
+  const y=node.type==='condition'?(edge.fromPort==='false'?height*.70:height*.26):height/2;
+  return {x:node.x+nodeW,y:node.y+y,side:'right'};
+ };
+ const destinationPoint=(node,source,toPort)=>{
+  const height=nodeElement(node)?.offsetHeight||82;
+  const candidates=[
+   {x:node.x,y:node.y+height/2,side:'left'},
+   {x:node.x+nodeW/2,y:node.y,side:'top'},
+   {x:node.x+nodeW/2,y:node.y+height,side:'bottom'},
+   {x:node.x+nodeW,y:node.y+height*(node.type==='condition'?.48:.75),side:'right'}
+  ].filter(point=>!isDirectionalType(node.type)||point.side==='left'||point.side==='top');
+  const preferred=candidates.find(point=>point.side===toPort);
+  if(preferred)return preferred;
+  return candidates.reduce((best,p)=>{
+   const d=(p.x-source.x)**2+(p.y-source.y)**2;
+   return !best||d<best.d?{...p,d}:best;
+  },null);
+ };
+ const draw=(edge,i,highlight)=>{
+  const a=byId.get(edge.from),b=byId.get(edge.to);if(!a||!b)return;
+  const touches=!!selected&&(edge.from===selected||edge.to===selected);
+  if(touches!==highlight)return;
+  const source=sourcePoint(a,edge),dest=destinationPoint(b,source,edge.toPort);
+  const direction={left:{x:-1,y:0},right:{x:1,y:0},top:{x:0,y:-1},bottom:{x:0,y:1}};
+  const sourceDirection=direction[source.side],destDirection=direction[dest.side];
+  const distance=Math.max(32,Math.min(120,Math.hypot(dest.x-source.x,dest.y-source.y)*.35));
+  const path=`M ${source.x} ${source.y} C ${source.x+sourceDirection.x*distance} ${source.y+sourceDirection.y*distance}, ${dest.x+destDirection.x*distance} ${dest.y+destDirection.y*distance}, ${dest.x} ${dest.y}`;
+  const isSelected=selectedEdge===edge;
+  const p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',path);p.setAttribute('class','edge'+(touches?' hl':'')+(isSelected?' selected':''));p.dataset.edge=i;p.style.pointerEvents='stroke';
+  const tip=document.createElementNS('http://www.w3.org/2000/svg','title');tip.textContent=`${defaults[a.type].title} (${a.id}) → ${defaults[b.type].title} (${b.id})`+(edge.role?` (${edge.role.replace('_',' ')})`:'');p.appendChild(tip);
+  p.addEventListener('click',e=>{e.stopPropagation();selected=null;selectedEdge=edge;nodes.forEach(renderNode);renderEdges();renderProperties(null)});
+  p.addEventListener('dblclick',()=>{clearWireOperandForEdge(edge);edges.splice(i,1);if(selectedEdge===edge)selectedEdge=null;const destination=nodes.find(node=>node.id===edge.to);  if(destination?.type==='condition'){renderNode(destination);if(selected===destination.id)renderProperties(destination)}renderEdges();updateCounts();saveHistory();if(activeBottom==='results')renderBottom();toast('Connection removed')});svg.appendChild(p);
+ };
+ edges.forEach((e,i)=>draw(e,i,false));
+ edges.forEach((e,i)=>draw(e,i,true));
+}
+function assignRole(edge){
+ const dest=nodes.find(n=>n.id===edge.to);if(!dest||dest.type!=='position')return;
+ const src=nodes.find(n=>n.id===edge.from);
+ const used=new Set(edges.filter(e=>e!==edge&&e.to===dest.id&&e.role).map(e=>e.role));
+ edge.role=src&&src.type==='risk'?'risk':(ROLES.filter(r=>r!=='risk').find(r=>!used.has(r))||'long_entry');
+}
+function connectionRuleViolation(fromId,toId){
+ const source=nodes.find(n=>n.id===fromId);
+ const destination=nodes.find(n=>n.id===toId);
+ if(!source||!destination)return null;
+ // Start-related edges are intentionally excluded from the connection rules.
+ if(source.type==='start'||destination.type==='start')return null;
+ const sourceIsIndicator=INDICATORS.includes(source.type);
+ const destinationIsIndicator=INDICATORS.includes(destination.type);
+ const sourceIsAction=['buy','sell','close'].includes(source.type);
+ const destinationIsAction=['buy','sell','close'].includes(destination.type);
+ const sourceIsLogic=source.type==='and';
+ const destinationIsLogic=destination.type==='and';
+ const destinationIsCondition=destination.type==='condition';
+ const sourceIsCondition=source.type==='condition';
+ if(sourceIsIndicator&&!destinationIsCondition){
+  if(destinationIsIndicator)return 'Indicators cannot connect to other Indicators.';
+  if(destinationIsLogic)return 'Indicators cannot connect directly to AND/OR Logic. Connect the Indicator to a Condition operand.';
+  if(destinationIsAction)return 'Indicators cannot connect directly to Actions. Connect the Indicator to a Condition operand.';
+  return 'Indicators can connect only to Condition operands.';
+ }
+ if(sourceIsCondition&&!(destinationIsLogic||destinationIsCondition||destinationIsAction)){
+  return 'Conditions can flow only to AND/OR Logic, another Condition, or an Action.';
+ }
+ if(destinationIsIndicator&&(sourceIsAction||sourceIsLogic)){
+  return 'Actions and AND/OR Logic cannot connect to Indicators.';
+ }
+ return null;
+}
+function connectionPoint(clientX,clientY){
+ const r=world.getBoundingClientRect();
+ return {x:(clientX-r.left)/zoom,y:(clientY-r.top)/zoom};
+}
+function forgetWireOperand(node,side){
+ const filled=node.props?._wireOperands;
+ if(!filled)return;
+ delete filled[side];
+ if(!Object.keys(filled).length)delete node.props._wireOperands;
+}
+function clearWireOperandForEdge(edge){
+ const source=nodes.find(node=>node.id===edge.from),destination=nodes.find(node=>node.id===edge.to);
+ if(!source||!destination||!INDICATORS.includes(source.type)||destination.type!=='condition')return;
+ const filled=destination.props?._wireOperands;
+ if(!filled)return;
+ Object.entries(filled).forEach(([side,entry])=>{
+  const sourceId=typeof entry==='string'?entry:entry?.id;
+  const exactValue=typeof entry==='object'&&entry?entry.value:undefined;
+  if(sourceId!==source.id)return;
+  const marker=side.match(/^(.+):(left|right)$/);
+  if(marker){
+   const rule=expressionRules(destination.props.expression).find(item=>item.id===marker[1]);
+   if(rule&&(exactValue!==undefined?rule[marker[2]]===exactValue:operandReference(rule[marker[2]])===source.id))rule[marker[2]]='';
+  }else{
+   const legacyRule=destination.props.expression?expressionRules(destination.props.expression)[0]:null;
+   const current=legacyRule?.[side]??destination.props[side];
+   if(exactValue!==undefined?current===exactValue:operandReference(current)===source.id){
+    if(legacyRule)legacyRule[side]='';
+    else destination.props[side]='';
+   }
+  }
+  delete filled[side];
+ });
+ if(!Object.keys(filled).length)delete destination.props._wireOperands;
+ if(destination.props.expression)syncLegacyConditionFields(destination);
+}
+function fillConditionOperandFromWire(source,destination){
+ if(!INDICATORS.includes(source.type)||destination.type!=='condition')return;
+ const props=destination.props||{},expression=ensureConditionExpression(destination),rules=expressionRules(expression);
+ const alreadyReferenced=rules.some(rule=>['left','right'].some(side=>operandReference(rule[side])===source.id));
+ if(alreadyReferenced)return;
+ const value=`${source.id}.${defaultIndicatorOutput(source.type)}`;
+ const rule=newConditionRule(value,'>',0);
+ rule._autoConnectedIndicator=source.id;
+ if(expression.children.length)expression.operators.push('AND');
+ expression.children.push(rule);
+ props._wireOperands={...(props._wireOperands||{}),[`${rule.id}:left`]:{id:source.id,value}};
+ syncLegacyConditionFields(destination);
+}
+function startConnectionDrag(e,id,port){
+ if(e.button!==0)return;
+ const source=nodes.find(n=>n.id===id);if(!source)return;
+ const handle=e.currentTarget;
+ const hr=handle.getBoundingClientRect();
+ const start=connectionPoint(hr.left+hr.width/2,hr.top+hr.height/2);
+ const draft=document.createElementNS('http://www.w3.org/2000/svg','path');
+ draft.setAttribute('class','edge-draft');svg.appendChild(draft);
+ let targetEl=null;
+ const drawDraft=(x,y)=>{
+  const midX=start.x+(x-start.x)*.5;
+  draft.setAttribute('d',`M ${start.x} ${start.y} H ${midX} V ${y} H ${x}`);
+ };
+ const clearTargets=()=>world.querySelectorAll('.node.connection-target').forEach(el=>el.classList.remove('connection-target'));
+ const move=ev=>{
+  const pt=connectionPoint(ev.clientX,ev.clientY);drawDraft(pt.x,pt.y);
+  const under=document.elementFromPoint(ev.clientX,ev.clientY);
+  const candidate=under?.closest('.node');
+  clearTargets();targetEl=candidate&&candidate.dataset.nodeId!==id?candidate:null;
+  if(targetEl)targetEl.classList.add('connection-target');
+ };
+ const finish=ev=>{
+  window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',finish);
+  draft.remove();clearTargets();
+  const under=document.elementFromPoint(ev.clientX,ev.clientY);
+  const destinationEl=under?.closest('.node');
+  const destinationId=destinationEl?.dataset.nodeId;
+  const destination=nodes.find(node=>node.id===destinationId);
+  const destinationSide=under?.closest('.handle.in')?.dataset.side||
+   (destination&&isDirectionalType(destination.type)?(()=>{
+    const rect=destinationEl.getBoundingClientRect();
+    return Math.abs(ev.clientY-rect.top)<Math.abs(ev.clientX-rect.left)?'top':'left';
+   })():undefined);
+  if(!destinationId||destinationId===id){toast('Connection cancelled. Drop the line onto a different block.','error');return;}
+  const violation=connectionRuleViolation(id,destinationId);
+  if(violation){
+   toast(`Invalid connection: ${violation}`,'error');return;
+  }
+  if(destination&&isDirectionalType(destination.type)&&destination.type!=='condition'&&edges.some(edge=>edge.to===destinationId&&!(edge.from===id&&edge.fromPort===port))){
+   toast(`${defaults[destination.type].title} already has an incoming connection.`,'error');return;
+  }
+  const existing=edges.find(edge=>edge.from===id&&edge.to===destinationId&&edge.fromPort===port);
+  if(existing){
+   if(destinationSide)existing.toPort=destinationSide;else delete existing.toPort;
+  }else{
+   if(source.type!=='start'){
+    edges.filter(edge=>edge.from===id&&edge.fromPort===port).forEach(clearWireOperandForEdge);
+    edges=edges.filter(edge=>!(edge.from===id&&edge.fromPort===port));
+   }
+   const edge={from:id,to:destinationId,fromPort:port,...(destinationSide?{toPort:destinationSide}:{})};edges.push(edge);assignRole(edge);
+  }
+  if(destination)fillConditionOperandFromWire(source,destination);
+  if(destination&&isDirectionalType(destination.type)){
+   edges.filter(edge=>edge.to===destinationId).forEach(edge=>{edge.toPort=destinationSide||'left'});
+  }
+  if(destination?.type==='condition'){renderNode(destination);if(selected===destination.id)renderProperties(destination)}
+  renderEdges();updateCounts();saveHistory();if(activeBottom==='results')renderBottom();toast('Blocks connected');
+ };
+ move(e);
+ window.addEventListener('pointermove',move);window.addEventListener('pointerup',finish,{once:true});
+}
+function onNodePointerDown(e,n){
+ if(e.target.closest('.handle')||e.target.closest('.node-actions'))return;
+ if(e.button!==0)return;
+ selectNode(n.id);const rect=world.getBoundingClientRect();const startX=e.clientX,startY=e.clientY,ox=n.x,oy=n.y;
+ const move=ev=>{n.x=Math.max(0,ox+(ev.clientX-startX)/zoom);n.y=Math.max(0,oy+(ev.clientY-startY)/zoom);const el=nodeElement(n);el.style.left=n.x+'px';el.style.top=n.y+'px';renderEdges()};
+ const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);saveHistory()};
+ window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);
+}
+function selectNode(id){
+ const n=nodes.find(x=>x.id===id);
+ if(!n)return;
+ selected=id;selectedEdge=null;
+ const app=$('.app');
+ app.classList.remove('properties-closed','hide-right');
+ $('.right').style.display='block';
+ $('#rightResize').style.display='flex';
+ const toggle=document.querySelector('.panel-toggle[data-panel="right"]');
+ if(toggle){toggle.classList.add('active');toggle.setAttribute('aria-pressed','true');}
+ nodes.forEach(renderNode);
+ renderEdges();
+ renderProperties(n);
+}
+function deleteNode(id){const removed=edges.filter(e=>e.from===id||e.to===id);removed.forEach(clearWireOperandForEdge);nodes=nodes.filter(n=>n.id!==id);edges=edges.filter(e=>e.from!==id&&e.to!==id);selected=null;if(selectedEdge&&(selectedEdge.from===id||selectedEdge.to===id))selectedEdge=null;world.querySelector(`[data-node-id="${id}"]`)?.remove();renderEdges();renderProperties(null);updateCounts();$('#dropHint').style.display=nodes.length?'none':'block';saveHistory();if(activeBottom==='results')renderBottom()}
+function duplicateNode(id){const n=nodes.find(x=>x.id===id);if(!n)return;if(n.type==='start'){toast('The Start block is reserved and cannot be duplicated.','error');return;}const props=clone(n.props);if(n.type==='condition')delete props._wireOperands;addNode(n.type,n.x+35,n.y+35,props)}
+function field(label,key,value,type='text',opts=null){
+ let input='';
+ if(type==='select')input=`<select data-prop="${key}">${opts.map(o=>`<option value="${o.value}" ${String(value)===String(o.value)?'selected':''}>${o.label}</option>`).join('')}</select>`;
+ else input=`<input data-prop="${key}" type="${type}" value="${value??''}" ${type==='number'?'step="any"':''}>`;
+ return `<div class="field"><label>${label}</label>${input}</div>`;
+}
+function renderProperties(n){
+ if(!n){
+  $('.app').classList.add('properties-closed');
+  $('.right').style.display='none';
+  $('#rightResize').style.display='none';
+  const toggle=document.querySelector('.panel-toggle[data-panel="right"]');
+  if(toggle){toggle.classList.remove('active');toggle.setAttribute('aria-pressed','false');}
+  $('#propTitle').textContent='';$('#propSub').textContent='';$('#propId').hidden=true;$('#propId .property-id-value').textContent='';$('#properties').innerHTML='';
+  return;
+ }
+ $('.app').classList.remove('properties-closed');$('.right').style.display='block';$('#rightResize').style.display='flex';const p=n.props;$('#propTitle').innerHTML=`<span class="property-icon ${defaults[n.type].kind}">${defaults[n.type].icon}</span><span>${p.label||defaults[n.type].title}</span><button class="property-close" id="closeProperties" title="Close properties">×</button>`;$('#propSub').textContent=defaults[n.type].kind.toUpperCase();$('#propId').hidden=false;$('#propId .property-id-value').textContent=n.id;
+ let h=field('Name','label',p.label||(n.type==='and'?'Entry Logic':defaults[n.type].title));
+ if(n.type==='and'){
+  const incoming=edges.filter(e=>e.to===n.id).map(e=>nodes.find(x=>x.id===e.from)).filter(x=>x&&x.type==='condition');
+  const op=p.operator||'AND';
+  h+=`<div class="field"><label>Operator</label><div class="logic-operator">${['AND','OR','NOT'].map(v=>`<button type="button" data-logic-op="${v}" class="${op===v?'active':''}">${v}</button>`).join('')}</div></div>`;
+  h+=`<div class="field"><label>Conditions (${incoming.length})</label><div class="logic-condition-list">${incoming.map(c=>`<div class="logic-condition-row"><span class="grip" title="Reorder condition">⠿</span><span class="diamond">◇</span><span class="logic-condition-text">${summary(c)}</span><button class="remove-condition" type="button" data-remove-edge="${c.id}" title="Remove condition">×</button></div>`).join('')||'<div class="logic-empty">Connect Condition blocks to this Logic component.</div>'}</div><button class="logic-add" type="button" id="addLogicCondition">＋ Add Condition</button></div>`;
+  h+=`<div class="field" style="border-top:1px solid var(--line);padding-top:12px"><label>Description</label><textarea class="logic-description" data-prop="description">${p.description||'All conditions must be true to trigger the connected action.'}</textarea></div>`;
+ } else {
+ if(n.type==='start')h+=field('Trigger event','event',p.event,'select',[{value:'New Candle',label:'New Candle'},{value:'Every Minute',label:'Every Minute'},{value:'Market Open',label:'Market Open'}]);
+ if(['rsi','ema','atr','adx'].includes(n.type)){h+=field('Period','period',p.period,'number');h+=field('Price source','source',p.source,'select',['close','open','high','low','hl2'].map(x=>({value:x,label:x.toUpperCase()})))}
+ if(n.type==='ema')h+=field('Moving average type','maType',p.maType,'select',[{value:'EMA',label:'EMA'},{value:'SMA',label:'SMA'}]);
+ if(n.type==='macd'){h+=field('Fast period','fast',p.fast,'number')+field('Slow period','slow',p.slow,'number')+field('Signal period','signal',p.signal,'number')}
+ if(n.type==='bollinger'){h+=field('Period','period',p.period,'number')+field('Standard deviations','std',p.std,'number')+field('Price source','source',p.source,'select',['close','open','high','low'].map(x=>({value:x,label:x.toUpperCase()})))}
+ if(n.type==='condition')h+=renderConditionBuilder(n);
+ if(n.type==='and')h+=field('Logical operator','operator',p.operator,'select',[{value:'AND',label:'AND'},{value:'OR',label:'OR'}])+field('Number of inputs','count',p.count||2,'number');
+ if(n.type==='wait')h+=field('Candles to wait','candles',p.candles,'number');
+ if(['buy','sell'].includes(n.type)){h+=field('Order type','orderType',p.orderType,'select',[{value:'market',label:'Market'},{value:'limit',label:'Limit'}])+field('Quantity','quantity',p.quantity,'number')}
+ if(n.type==='close')h+=field('Position to close (%)','percentage',p.percentage,'number');
+ if(['stoploss','takeprofit'].includes(n.type))h+=field('Value mode','mode',p.mode,'select',[{value:'percent',label:'Percentage'},{value:'points',label:'Points'}])+field('Value','value',p.value,'number');
+ }
+ h+=`<div style="border-top:1px solid var(--line);margin-top:18px;padding-top:12px;display:flex;gap:8px"><button class="btn small" id="duplicateSelected">Duplicate</button><button class="btn small" id="deleteSelected" style="color:#ff8992">Delete block</button></div>`;
+ $('#properties').innerHTML=`<div class="property-card"><div class="property-section-title">Configuration</div>${h}</div>`;
+ $('#properties').querySelectorAll('[data-logic-op]').forEach(btn=>btn.addEventListener('click',()=>{
+  p.operator=btn.dataset.logicOp;renderNode(n);renderProperties(n);renderEdges();saveHistory();
+ }));
+ $('#properties').querySelectorAll('[data-remove-edge]').forEach(btn=>btn.addEventListener('click',()=>{
+  edges=edges.filter(e=>!(e.to===n.id&&e.from===btn.dataset.removeEdge));renderEdges();renderProperties(n);updateCounts();saveHistory();
+ }));
+ $('#addLogicCondition')?.addEventListener('click',()=>{
+  const c=addNode('condition',Math.max(80,n.x-280),n.y+edges.filter(e=>e.to===n.id).length*115,{left:'close',operator:'>',right:0});
+  edges.push({from:c.id,to:n.id,fromPort:'out'});renderEdges();renderProperties(n);updateCounts();saveHistory();
+ });
+ $('#closeProperties')?.addEventListener('click',()=>renderProperties(null));
+ $('#properties').querySelectorAll('[data-prop]').forEach(input=>input.addEventListener('change',()=>{
+  const key=input.dataset.prop;let val=input.value;if(input.type==='number')val=Number(val);
+  // A numeric constant on a condition is stored as a number so it round-trips through Python unchanged.
+  if(n.type==='condition'&&key==='right'&&String(val).trim()!==''&&!isNaN(Number(val)))val=Number(val);
+  if(key==='label')p.label=val;else p[key]=val;
+  renderNode(n);renderProperties(n);renderEdges();saveHistory();
+ }));
+ if(n.type==='condition')wireConditionBuilderEvents(n);
+ $('#duplicateSelected').onclick=()=>duplicateNode(n.id);$('#deleteSelected').onclick=()=>deleteNode(n.id);
+}
+function updateCounts(){$('#nodeCount').textContent=`${nodes.length} nodes · ${edges.length} connections`}
+function toast(msg,type='success'){const t=$('#toast');t.textContent=msg;t.classList.toggle('error',type==='error');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),type==='error'?3200:1900)}
+function syncIRFromCanvas(){strategyIR=graphToIR(nodes,edges,$('#strategyName').value);return strategyIR}
+function renderCanvasFromIR(ir){const graph=irToGraph(ir);idCounters=mergeIdCounters(graph.id_counters,graph.nodes);strategyIR=clone(ir);nodes=graph.nodes;edges=graph.edges;selected=null;selectedEdge=null;world.querySelectorAll('.node').forEach(x=>x.remove());nodes.forEach(renderNode);renderEdges();renderProperties(null);updateCounts();$('#dropHint').style.display=nodes.length?'none':'block';return graph}
+function snapshot(){const ir=syncIRFromCanvas();return JSON.stringify({ir})}
+function saveHistory(){syncIRFromCanvas();const s=snapshot();if(history[historyIndex]!==s){history=history.slice(0,historyIndex+1);history.push(s);if(history.length>60)history.shift();historyIndex=history.length-1}syncPythonEditor()}
+function restore(s){const d=JSON.parse(s);if(d.ir){$('#strategyName').value=d.ir.strategy_name||'Untitled Strategy';renderCanvasFromIR(d.ir);}else{nodes=d.nodes||[];edges=d.edges||[];$('#strategyName').value=d.name||'Untitled Strategy';renderCanvasFromIR(graphToIR(nodes,edges,$('#strategyName').value));}syncIRFromCanvas();syncPythonEditor();renderBottom()}
+function undo(){if(historyIndex>0){historyIndex--;restore(history[historyIndex])}}
+function redo(){if(historyIndex<history.length-1){historyIndex++;restore(history[historyIndex])}}
+
+// ---------------------------------------------------------------------------
+// Auto layout: layered, top-to-bottom flow.
+//  1. Each block is placed in a layer below everything it depends on.
+//  2. Blocks inside a layer are ordered to keep connected blocks close together.
+//  3. Wide layers wrap onto several rows so the canvas never becomes a huge strip.
+// ---------------------------------------------------------------------------
+const LAYOUT={w:190,h:100,gapX:50,rowPitch:175,layerGap:25,maxPerRow:6,left:60,top:50};
+function autoLayout(gNodes,gEdges){
+ const L=LAYOUT,ids=gNodes.map(n=>n.id),byId=new Map(gNodes.map(n=>[n.id,n]));
+ let out=new Map(ids.map(i=>[i,[]])),inn=new Map(ids.map(i=>[i,[]]));
+ const seen=new Set();
+ gEdges.forEach(e=>{if(!byId.has(e.from)||!byId.has(e.to)||e.from===e.to)return;const k=e.from+'>'+e.to;if(seen.has(k))return;seen.add(k);out.get(e.from).push(e.to);inn.get(e.to).push(e.from)});
+ // Break cycles (a hand-wired loop must not hang the layout).
+ const state=new Map(),back=new Set();
+ const dfs=id=>{state.set(id,1);for(const t of out.get(id)){if(state.get(t)===1)back.add(id+'>'+t);else if(!state.get(t))dfs(t)}state.set(id,2)};
+ [...gNodes.filter(n=>n.type==='start'),...gNodes.filter(n=>n.type!=='start')].forEach(n=>{if(!state.get(n.id))dfs(n.id)});
+ if(back.size){out.forEach((v,k)=>out.set(k,v.filter(t=>!back.has(k+'>'+t))));inn=new Map(ids.map(i=>[i,[]]));out.forEach((v,k)=>v.forEach(t=>inn.get(t).push(k)))}
+ // Longest-path layering.
+ const layer=new Map(),indeg=new Map(ids.map(i=>[i,inn.get(i).length]));
+ const queue=ids.filter(i=>indeg.get(i)===0);queue.forEach(i=>layer.set(i,0));
+ for(let qi=0;qi<queue.length;qi++){const u=queue[qi];for(const v of out.get(u)){layer.set(v,Math.max(layer.get(v)??0,layer.get(u)+1));indeg.set(v,indeg.get(v)-1);if(indeg.get(v)===0)queue.push(v)}}
+ // Source blocks other than Start (e.g. Risk Rules) sit directly above what they feed.
+ const loose=new Set();
+ gNodes.forEach(n=>{
+  if(n.type==='start')return;
+  const kids=out.get(n.id);
+  if(!inn.get(n.id).length){
+   if(!kids.length)loose.add(n.id);
+   else layer.set(n.id,Math.max(0,Math.min(...kids.map(k=>layer.get(k)))-1));
+  }
+ });
+ // Blocks fed only by Start (e.g. Risk Rules) are pulled down to sit directly above the blocks they feed.
+ gNodes.forEach(n=>{
+  if(n.type==='start'||loose.has(n.id))return;
+  const parents=inn.get(n.id),kids=out.get(n.id);
+  if(parents.length&&kids.length&&parents.every(p=>byId.get(p).type==='start'))layer.set(n.id,Math.max(layer.get(n.id),Math.min(...kids.map(k=>layer.get(k)))-1));
+ });
+ const maxL=Math.max(0,...ids.filter(id=>!loose.has(id)).map(id=>layer.get(id)||0));
+ let layers=Array.from({length:maxL+1},()=>[]);
+ ids.forEach(id=>{if(!loose.has(id))layers[layer.get(id)||0].push(id)});
+ layers=layers.filter(l=>l.length);
+ if(loose.size)layers.push(ids.filter(id=>loose.has(id)));
+ // Crossing reduction: alternate barycentre sweeps down and up.
+ const pos=new Map();
+ const setPos=()=>layers.forEach(l=>l.forEach((id,i)=>pos.set(id,(i+.5)/l.length)));setPos();
+ const bary=(id,nb)=>{const a=nb.get(id).map(x=>pos.get(x));return a.length?a.reduce((s,v)=>s+v,0)/a.length:pos.get(id)};
+ const sweep=(i,nb)=>{const keyed=layers[i].map((id,idx)=>({id,idx,b:bary(id,nb)}));keyed.sort((a,b)=>a.b-b.b||a.idx-b.idx);layers[i]=keyed.map(k=>k.id);setPos()};
+ for(let it=0;it<8;it++){
+  for(let i=1;i<layers.length;i++)sweep(i,inn);
+  for(let i=layers.length-2;i>=0;i--)sweep(i,out);
+ }
+ // Coordinates: wrap wide layers into balanced rows and centre every row.
+ const rowsOf=n=>{const rows=Math.ceil(n/L.maxPerRow);return {rows,per:Math.ceil(n/rows)}};
+ const maxCols=Math.max(1,...layers.map(l=>rowsOf(l.length).per));
+ const totalW=maxCols*(L.w+L.gapX)-L.gapX,cx=L.left+totalW/2;
+ const res=new Map();let y=L.top;
+ layers.forEach(l=>{
+  const {rows,per}=rowsOf(l.length);
+  for(let r=0;r<rows;r++){
+   const row=l.slice(r*per,(r+1)*per);
+   let x=cx-(row.length*(L.w+L.gapX)-L.gapX)/2;
+   row.forEach(id=>{res.set(id,{x:Math.round(x),y:Math.round(y)});x+=L.w+L.gapX});
+   y+=L.rowPitch;
+  }
+  y+=L.layerGap;
+ });
+ return res;
+}
+// New blocks added through Python are placed under their parents; existing blocks keep their positions.
+function placeNewNodes(gNodes,gEdges,placed){
+ const byId=new Map(gNodes.map(n=>[n.id,n])),done=new Set(placed),L=LAYOUT;
+ const avg=a=>a.reduce((s,v)=>s+v,0)/a.length;
+ gNodes.filter(n=>!done.has(n.id)).forEach(n=>{
+  const placedNodes=()=>gNodes.filter(o=>done.has(o.id));
+  const parents=gEdges.filter(e=>e.to===n.id&&done.has(e.from)).map(e=>byId.get(e.from));
+  const kids=gEdges.filter(e=>e.from===n.id&&done.has(e.to)).map(e=>byId.get(e.to));
+  let x,y;
+  if(parents.length){x=avg(parents.map(p=>p.x));y=Math.max(...parents.map(p=>p.y))+L.rowPitch}
+  else if(kids.length){x=avg(kids.map(k=>k.x));y=Math.max(L.top,Math.min(...kids.map(k=>k.y))-L.rowPitch)}
+  else{x=L.left;y=Math.max(L.top-L.rowPitch,...placedNodes().map(o=>o.y))+L.rowPitch}
+  x=Math.max(0,Math.round(x));y=Math.max(0,Math.round(y));
+  while(placedNodes().some(o=>Math.abs(o.x-x)<L.w+20&&Math.abs(o.y-y)<L.h+20))x+=L.w+L.gapX;
+  n.x=x;n.y=y;done.add(n.id);
+ });
+}
+// Fit the canvas width into the viewport (never zooming in, never below the minimum zoom).
+function fitView(){
+ if(nodes.length){
+  const maxX=Math.max(...nodes.map(n=>n.x+190))+40;
+  zoom=Math.round(Math.max(.55,Math.min(1,(viewport.clientWidth-20)/maxX))*100)/100;
+ }else zoom=1;
+ world.style.transform=`scale(${zoom})`;viewport.scrollTo(0,0);
+}
+
+// Shared Strategy Intermediate Representation (IR).
+// The canvas graph is adapted to/from this schema; editor and export paths use it too.
+function graphToIR(graphNodes=nodes,graphEdges=edges,strategyName=$('#strategyName').value){
+ const counters=mergeIdCounters(idCounters,graphNodes);
+ const components=graphNodes.map(n=>({
+  id:String(n.id),type:String(n.type),config:clone(n.props||{}),
+  position:{x:Number(n.x)||0,y:Number(n.y)||0}
+ }));
+ const connections=graphEdges.map(e=>({
+  from:String(e.from),to:String(e.to),from_port:String(e.fromPort||'out'),
+  ...(e.toPort?{to_port:String(e.toPort)}:{}),...(e.role?{role:String(e.role)}:{})
+ }));
+ return {
+  schema:'rg-labs.strategy-ir',schema_version:1,
+  strategy_name:String(strategyName||'Untitled Strategy'),id_counters:counters,
+  components,connections,
+  // Compatibility fields retained for existing imports and UI integrations.
+  version:1,nodes:clone(graphNodes),edges:clone(graphEdges)
+ };
+}
+// Conditions have YES/NO outputs, every other block has one output. Older saves stored a position
+// role (long_entry, ...) in fromPort; it now lives in `role`. Duplicate connections are removed.
+function normalizeEdges(graphNodes,graphEdges){
+ const type=new Map(graphNodes.map(n=>[n.id,n.type])),seen=new Set(),res=[];
+ graphEdges.forEach(e=>{
+  const o={from:e.from,to:e.to,fromPort:e.fromPort||'out'};
+  if(isDirectionalType(type.get(o.to)))o.toPort=e.toPort==='top'?'top':'left';
+  else if(['left','top','bottom','right'].includes(e.toPort))o.toPort=e.toPort;
+  if(e.role)o.role=e.role;
+  if(ROLES.includes(o.fromPort)){if(!o.role)o.role=o.fromPort;o.fromPort='out'}
+  o.fromPort=type.get(o.from)==='condition'?(o.fromPort==='false'?'false':'true'):'out';
+  const key=[o.from,o.to,o.fromPort,o.role||''].join('|');
+  if(seen.has(key))return;seen.add(key);res.push(o);
+ });
+ return res;
+}
+function irToGraph(ir){
+ if(!ir||typeof ir!=='object')throw new Error('Strategy IR must be an object.');
+ let graphNodes,graphEdges;
+ if(Array.isArray(ir.components)&&Array.isArray(ir.connections)){
+  graphNodes=ir.components.map(c=>({id:String(c.id),type:String(c.type),x:Number(c.position?.x)||0,y:Number(c.position?.y)||0,props:clone(c.config||{})}));
+  graphEdges=ir.connections.map(c=>({from:String(c.from),to:String(c.to),fromPort:String(c.from_port||'out'),...(c.to_port?{toPort:String(c.to_port)}:{}),...(c.role?{role:String(c.role)}:{})}));
+ }else if(Array.isArray(ir.nodes)&&Array.isArray(ir.edges)){
+  graphNodes=clone(ir.nodes);graphEdges=clone(ir.edges);
+ }else throw new Error('Unsupported strategy format. Expected components/connections or nodes/edges.');
+ const ids=new Set();
+ graphNodes.forEach(n=>{
+  if(!n.id||ids.has(n.id))throw new Error('Strategy IR contains a missing or duplicate component ID.');
+  if(/^\d+$/.test(String(n.id)))throw new Error('Component IDs cannot be purely numeric.');
+  if(n.id==='start'&&n.type!=='start')throw new Error('The component ID "start" is reserved for the Start block.');
+  if(!defaults[n.type])throw new Error('Strategy IR contains unsupported component type: '+n.type);
+  ids.add(n.id);
+ });
+ graphEdges.forEach(e=>{if(!ids.has(e.from)||!ids.has(e.to))throw new Error('Strategy IR connection references an unknown component.');});
+ if(graphNodes.length>250||graphEdges.length>600)throw new Error('Strategy IR exceeds the canvas limits.');
+ return {version:1,strategy_name:ir.strategy_name||'Untitled Strategy',nodes:graphNodes,edges:normalizeEdges(graphNodes,graphEdges),id_counters:mergeIdCounters(ir.id_counters,graphNodes)};
+}
+function strategyJSON(){return clone(syncIRFromCanvas());}
+function encodeStrategyIR(ir){return btoa(unescape(encodeURIComponent(JSON.stringify(ir))));}
+function decodeStrategyIR(code){
+ const marker=code.match(/^# RG_STRATEGY_IR:\s*(.+)$/m);
+ if(!marker)return null;
+ try{return JSON.parse(decodeURIComponent(escape(atob(marker[1].trim()))));}
+ catch(e){throw new Error('Strategy metadata is invalid. Restore the last generated code.');}
+}
+
+function validate(){
+ const errors=[],warnings=[];
+ if(!nodes.length)errors.push('Add at least one block to the canvas.');
+ const starts=nodes.filter(n=>n.type==='start');if(starts.length!==1)errors.push(`A strategy must have exactly one Start block. Found ${starts.length}.`);
+ nodes.filter(n=>n.type!=='start').forEach(n=>{if(!edges.some(e=>e.to===n.id))errors.push(`${defaults[n.type].title} (${n.id}) has no incoming connection.`)});
+ nodes.filter(n=>n.type==='condition').forEach(n=>{
+  if(!edges.some(e=>e.from===n.id&&e.fromPort==='true'))warnings.push(`Condition ${n.id} has no YES branch connected.`);
+  if(!edges.some(e=>e.from===n.id&&e.fromPort==='false'))warnings.push(`Condition ${n.id} has no NO branch connected.`);
+  conditionExpressionWarnings(n).forEach(message=>warnings.push(`Condition ${n.id}: ${message}`));
+ });
+ edges.forEach(e=>{
+    if(!nodes.some(n=>n.id===e.from)||!nodes.some(n=>n.id===e.to)){errors.push('A connection points to a missing block.');return;}
+    const violation=connectionRuleViolation(e.from,e.to);
+    if(violation)errors.push(`Invalid connection (${e.from} → ${e.to}): ${violation}`);
+  });
+ const reachable=new Set();if(starts[0]){const visit=id=>{if(reachable.has(id))return;reachable.add(id);edges.filter(e=>e.from===id).forEach(e=>visit(e.to))};visit(starts[0].id)}
+ nodes.filter(n=>!reachable.has(n.id)).forEach(n=>warnings.push(`${defaults[n.type].title} (${n.id}) is not reachable from Start.`));
+ return {valid:errors.length===0,errors,warnings};
+}
+function pyName(id){return id.replace(/[^a-zA-Z0-9_]/g,'_')}
+function generatePython(){
+  const records=[];
+  const incoming=id=>edges.filter(e=>e.to===id);
+  const byId=id=>nodes.find(n=>n.id===id);
+  nodes.forEach(n=>{
+    const p=n.props||{};
+    if(INDICATORS.includes(n.type)){
+      const kind=n.type;
+      const cfg={id:n.id,kind,source:p.source||'close'};
+      if(kind==='rsi'||kind==='ema'||kind==='atr'||kind==='adx')cfg.period=Number(p.period||14);
+      if(kind==='ema')cfg.ma_type=p.maType||'EMA';
+      if(kind==='macd'){cfg.fast=Number(p.fast||12);cfg.slow=Number(p.slow||26);cfg.signal=Number(p.signal||9);}
+      if(kind==='bollinger'){cfg.period=Number(p.period||20);cfg.std=Number(p.std||2);}
+      records.push(['indicator',cfg]);
+    }else if(n.type==='condition'){
+      const expression=p.expression?.kind==='group'?p.expression:getConditionExpression(n);
+      const rec={id:n.id,left:p.left,operator:p.operator||'>',right:p.right,expression};
+      // Indicator links are normally implied by left/right; keep any extra hand-drawn ones as "uses".
+      const named=new Set(expressionRules(expression).flatMap(rule=>[rule.left,rule.right]).flatMap(v=>Array.isArray(v)?v:[v]).filter(v=>typeof v==='string').map(v=>String(v).split('.')[0]));
+      const extra=incoming(n.id).filter(e=>INDICATORS.includes(byId(e.from)?.type)&&!named.has(e.from)).map(e=>e.from);
+      if(extra.length)rec.uses=extra;
+      // A condition fed by another condition / start keeps that link as "after" (indicator links come from left/right).
+      const flow=incoming(n.id).find(e=>{const s=byId(e.from);return s&&!INDICATORS.includes(s.type)});
+      if(flow){const s=byId(flow.from);rec.after=s.type==='start'?'start':s.id;if(s.type==='condition'&&flow.fromPort==='false')rec.after_branch='false';}
+      records.push(['condition',rec]);
+    }else if(n.type==='and'){
+      records.push(['logic',{id:n.id,operator:p.operator||'AND',inputs:incoming(n.id).map(e=>e.from)}]);
+    }else if(['buy','sell','close'].includes(n.type)){
+      const e=incoming(n.id)[0];
+      const rec={id:n.id,action:n.type,when:e?e.from:'',branch:e?(byId(e.from)?.type==='condition'?e.fromPort:'out'):'true'};
+      if(n.type==='close')rec.percentage=Number(p.percentage??100);
+      else{rec.order_type=p.orderType||'market';rec.quantity=Number(p.quantity??1);}
+      records.push(['action',rec]);
+    }else if(n.type==='risk'){
+      records.push(['risk',{id:n.id,stop_atr:Number(p.stop_atr||2),target_atr:Number(p.target_atr||3)}]);
+    }else if(n.type==='position'){
+      const refs={};
+      incoming(n.id).forEach(e=>{const role=e.role||(ROLES.includes(e.fromPort)?e.fromPort:'input');refs[role]=e.from;});
+      records.push(['position',{id:n.id,...refs}]);
+    }
+  });
+  const lines=[
+    '# RG Labs Strategy Builder · Strategy declarations',
+    `# Strategy: ${$('#strategyName').value}`,
+    '#',
+    '# This editor is a representation of the canvas: component declarations only.',
+    '# Data preparation, indicator calculation, condition evaluation, signal generation and',
+    '# strategy execution belong to a separate backend execution module, not to this file.',
+    '#',
+    '# Every component has a unique id. Reference that id in other components.',
+    '# Supported calls: sb.indicator, sb.condition, sb.logic, sb.action, sb.risk, sb.position.',
+    '# Keep one sb.<component>({...}) declaration per line (multi-line objects are also accepted).',
+    '# A condition may add "after":"<component id or start>" (and "after_branch":"false") to continue a flow,',
+    '# and "uses":["<indicator id>"] to link an indicator that is not named in left/right.',
+    '# RG_STRATEGY_IR: '+encodeStrategyIR(graphToIR()),
+    '',
+    'def build_strategy(sb):',
+    '    """Declare the strategy graph using stable component IDs."""'
+  ];
+  if(records.length){
+    records.forEach(([fn,obj])=>lines.push(`    sb.${fn}(${JSON.stringify(obj)})`));
+  }else{
+    lines.push('    # INDICATORS: rsi, ema, macd, bollinger, atr, adx');
+    lines.push('    # sb.indicator({"id":"ema_1","kind":"ema","period":20,"source":"close"})');
+    lines.push('    # CONDITIONS compare columns / component IDs / numeric constants');
+    lines.push('    # sb.condition({"id":"cond_1","left":"close","operator":">","right":"ema_1.value"})');
+    lines.push('    # LOGIC supports nested AND / OR groups using component IDs');
+    lines.push('    # sb.logic({"id":"logic_1","operator":"AND","inputs":["cond_1","cond_2"]})');
+    lines.push('    # ACTIONS: buy, sell, close');
+    lines.push('    # sb.action({"id":"buy_1","action":"buy","when":"logic_1","branch":"true"})');
+    lines.push('    # RISK / POSITION components describe ATR exits and position state');
+    lines.push('    # sb.risk({"id":"risk_1","stop_atr":2,"target_atr":3})');
+    lines.push('    # sb.position({"id":"position_1","long_entry":"logic_1","risk":"risk_1"})');
+  }
+  return lines.join('\n');
+}
+
+let pythonEditTimer=null,applyingPython=false;
+function syncPythonEditor(){
+ if(applyingPython||activeBottom!=='code')return;
+ const editor=$('#pythonCode');if(!editor)return;
+ const next=generatePython();
+ if(editor.value!==next)editor.value=next;
+ const status=$('#codeStatus');if(status){status.className='code-status success';status.textContent='Synced from visual strategy.'}
+}
+function onPythonEditorInput(){
+ // Keep typing passive. Import only on explicit user action.
+ clearTimeout(pythonEditTimer);
+ const status=$('#codeStatus');
+ if(status){status.className='code-status';status.textContent='Edits pending. Click Apply to canvas when ready.'}
+}
+
+// These belong to the backend execution module, not to the visual strategy.
+const EXECUTION_FUNCTIONS=['_normalise_ohlc_columns','calculate_indicators','_build_conditions','generate_signals','execute_strategy'];
+function findExecutionFunctions(code){
+ return EXECUTION_FUNCTIONS.filter(name=>new RegExp('^\\s*def\\s+'+name+'\\s*\\(','m').test(code));
+}
+function applyPythonToCanvas(showToast){
+ const editor=$('#pythonCode');if(!editor)return;
+ try{
+    const source=editor.value;
+    if(source.length>2000000)throw new Error('Code is too large to import (2 MB limit).');
+    if(source.split('\n').length>20000)throw new Error('Code is too long to import (20,000 line limit).');
+    const updated=parseSupportedPython(source);
+    if(!Array.isArray(updated.nodes)||!Array.isArray(updated.edges))throw new Error('Parser returned an invalid graph.');
+    if(updated.nodes.length>250)throw new Error('This canvas is limited to 250 components per strategy.');
+    if(updated.edges.length>600)throw new Error('This canvas is limited to 600 connections per strategy.');
+    const ids=new Set(updated.nodes.map(n=>n.id));
+    if(ids.size!==updated.nodes.length)throw new Error('The strategy contains duplicate component IDs.');
+    if(updated.nodes.some(n=>/^\d+$/.test(String(n.id))))throw new Error('Component IDs cannot be purely numeric.');
+    for(const edge of updated.edges){if(!ids.has(edge.from)||!ids.has(edge.to))throw new Error('A connection references a missing component.');}
+    // Do not mutate the live graph until parsing and validation have succeeded.
+    applyingPython=true;
+    const importedIR=updated.schema==='rg-labs.strategy-ir'?updated:graphToIR(updated.nodes,updated.edges,updated.strategy_name);
+    $('#strategyName').value=importedIR.strategy_name||$('#strategyName').value;
+    const selectedConditionId=nodes.find(node=>node.id===selected&&node.type==='condition')?.id;
+    renderCanvasFromIR(importedIR);saveHistory();
+    if(selectedConditionId&&nodes.some(node=>node.id===selectedConditionId&&node.type==='condition'))selectNode(selectedConditionId);
+    if(updated.autoLaidOut)fitView();
+    applyingPython=false;
+    const skipped=findExecutionFunctions(source);
+    const status=$('#codeStatus');if(status){status.className='code-status success';status.textContent='Python applied. Canvas and strategy JSON are updated.'+(skipped.length?' Not part of the visual strategy and ignored: '+skipped.join(', ')+'(). Keep these in the backend execution module; they will not be shown in this editor.':'')}
+    if(showToast)toast('Python changes applied to canvas');
+  }catch(err){
+    applyingPython=false;
+    const status=$('#codeStatus');if(status){status.className='code-status error';status.textContent='Not applied: '+err.message}
+ }
+}
+
+function parseStrategyDSL(code){
+  const declarations=[];
+  // The IR metadata carries presentation state (positions, the Start block id).
+  const savedIR=decodeStrategyIR(code);
+  const savedGraph=savedIR?irToGraph(savedIR):null;
+  const savedById=new Map((savedGraph?savedGraph.nodes:[]).map(n=>[n.id,n]));
+  const savedStart=savedGraph?savedGraph.nodes.find(n=>n.type==='start'):null;
+  const startId=savedStart?savedStart.id:'start';
+  // Parse declarations across physical lines so multi-line component objects work.
+  const declarationStart=/^\s*sb\.(indicator|condition|logic|action|risk|position)\s*\(/gm;
+  let match;
+  while((match=declarationStart.exec(code))){
+    const kind=match[1];
+    let cursor=declarationStart.lastIndex;
+    while(cursor<code.length && /\s/.test(code[cursor])) cursor++;
+    if(code[cursor]!=='{') continue;
+    const objectStart=cursor;
+    let depth=0, inString=false, escaped=false, objectEnd=-1;
+    for(;cursor<code.length;cursor++){
+      const ch=code[cursor];
+      if(inString){
+        if(escaped){escaped=false;continue;}
+        if(ch==='\\'){escaped=true;continue;}
+        if(ch==='"') inString=false;
+        continue;
+      }
+      if(ch==='"'){inString=true;continue;}
+      if(ch==='{') depth++;
+      else if(ch==='}'){
+        depth--;
+        if(depth===0){objectEnd=cursor+1;break;}
+      }
+    }
+    if(objectEnd<0) throw new Error('Unclosed component declaration for '+kind+'.');
+    cursor=objectEnd;
+    while(cursor<code.length && /\s/.test(code[cursor])) cursor++;
+    if(code[cursor]!==')') throw new Error('Expected closing ) after '+kind+' component declaration.');
+    let data;
+    // Support trailing commas in multiline Python-style dict/list formatting.
+    // Remove only commas immediately before ] or }, outside quoted strings.
+    const rawObject=code.slice(objectStart,objectEnd);
+    let sanitised='', inText=false, escapedText=false;
+    for(let j=0;j<rawObject.length;j++){
+      const ch=rawObject[j];
+      if(inText){
+        sanitised+=ch;
+        if(escapedText){escapedText=false;continue;}
+        if(ch==='\\'){escapedText=true;continue;}
+        if(ch==='"')inText=false;
+        continue;
+      }
+      if(ch==='"'){inText=true;sanitised+=ch;continue;}
+      if(ch===','){
+        let k=j+1;
+        while(k<rawObject.length && /\s/.test(rawObject[k]))k++;
+        if(rawObject[k]===']'||rawObject[k]==='}')continue;
+      }
+      sanitised+=ch;
+    }
+    try{data=JSON.parse(sanitised);}
+    catch(e){
+      const line=code.slice(0,match.index).split('\n').length;
+      throw new Error('Invalid component declaration on line '+line+'. Use double-quoted keys/strings and JSON values. Trailing commas are supported.');
+    }
+    if(!data||typeof data!=='object'||Array.isArray(data)||!data.id)throw new Error('Every component declaration must contain a unique id.');
+    if(/^\d+$/.test(String(data.id)))throw new Error('Component IDs cannot be purely numeric.');
+    if(data.id==='start'||data.id===startId)throw new Error('The component id "'+data.id+'" is reserved for the Start block.');
+    declarations.push({kind,data});
+    declarationStart.lastIndex=cursor+1;
+  }
+  if(declarations.length>249)throw new Error('A maximum of 249 declared components is supported.');
+  const ids=new Set();
+  declarations.forEach(x=>{if(ids.has(x.data.id))throw new Error('Duplicate component id: '+x.data.id);ids.add(x.data.id);});
+  const next={version:1,strategy_name:(code.match(/^# Strategy:\s*(.+)$/m)||[])[1]||'Custom Strategy',nodes:[],edges:[]};
+  const nodeById={};
+  const add=(id,type,props)=>{
+    if(!defaults[type])throw new Error('Unsupported component type "'+type+'" for '+id+'.');
+    // Keep settings the DSL cannot express (e.g. a custom block label) when the same block already exists.
+    const saved=savedById.get(id);
+    const base=saved&&saved.type===type?clone(saved.props||{}):{};
+    const node={id,type,x:0,y:0,props:{...base,...(props||{})}};
+    next.nodes.push(node);nodeById[id]=node;return node;
+  };
+  // The Start block always exists; it keeps its previous id when the code was generated by the builder.
+  add(startId,'start',savedStart?{}:{event:'New Candle'});
+  const num=v=>v===undefined||v===null||v===''?undefined:Number(v);
+  const pending=[];
+  declarations.forEach(({kind,data})=>{
+    if(kind==='indicator'){
+      const type=String(data.kind||'').toLowerCase();
+      if(!INDICATORS.includes(type))throw new Error('Unsupported indicator kind: '+type);
+      const props={source:data.source||'close'};
+      ['period','fast','slow','signal','std'].forEach(k=>{if(data[k]!==undefined)props[k]=Number(data[k]);});
+      if(data.ma_type)props.maType=data.ma_type;
+      add(data.id,type,props);
+    }else if(kind==='condition'){
+      const expression=data.expression?.kind==='group'?data.expression:null;
+      const expressionOperands=expression?expressionRules(expression).flatMap(rule=>[rule.left,rule.right]):[];
+      const firstRule=expression?expressionRules(expression)[0]:null;
+      const left=data.left??firstRule?.left,operator=data.operator||firstRule?.operator,right=data.right??firstRule?.right;
+      if(left===undefined||left===null||!operator||right===undefined)throw new Error('Condition '+data.id+' needs left, operator and right, or a non-empty expression.');
+      add(data.id,'condition',{left,operator,right,...(expression?{expression}: {})});
+      const raw=new Set(['open','high','low','close','volume','true','false']);
+      const refs=[...new Set((expression?expressionOperands:[left,right]).flatMap(v=>Array.isArray(v)?v:[v]).filter(v=>typeof v==='string'&&!raw.has(v.toLowerCase())&&!/^[-+]?\d+(?:\.\d+)?$/.test(v.trim())))];
+      pending.push({id:data.id,refs,...(expression?{allowMissingIndicatorRefs:true}:{})});
+      if(Array.isArray(data.uses))pending.push({id:data.id,refs:data.uses});
+      if(data.after)pending.push({id:data.id,refs:[data.after],port:data.after_branch==='false'?'false':'true'});
+    }else if(kind==='logic'){
+      const op=String(data.operator||'AND').toUpperCase();
+      if(!['AND','OR'].includes(op))throw new Error('Logic '+data.id+' must use AND or OR.');
+      const inputs=data.inputs||[];
+      if(!Array.isArray(inputs)||inputs.length<2)throw new Error('Logic '+data.id+' needs at least two input component IDs.');
+      add(data.id,'and',{operator:op,count:inputs.length});
+      pending.push({id:data.id,refs:inputs});
+    }else if(kind==='action'){
+      const type=String(data.action||'').toLowerCase();
+      if(!['buy','sell','close'].includes(type))throw new Error('Unsupported action: '+type);
+      const props={};
+      if(type==='close'){if(num(data.percentage)!==undefined)props.percentage=num(data.percentage)}
+      else{if(data.order_type)props.orderType=data.order_type;if(num(data.quantity)!==undefined)props.quantity=num(data.quantity)}
+      add(data.id,type,{...clone(defaults[type].props),...props});
+      pending.push({id:data.id,refs:[data.when],port:data.branch||'true'});
+    }else if(kind==='risk'){
+      add(data.id,'risk',{stop_atr:Number(data.stop_atr||2),target_atr:Number(data.target_atr||3)});
+    }else if(kind==='position'){
+      add(data.id,'position',{});
+      ROLES.forEach(k=>{if(data[k])pending.push({id:data.id,refs:[data[k]],role:k});});
+    }
+  });
+  const edgeKeys=new Set();
+  pending.forEach(link=>{
+    const dest=nodeById[link.id];
+    (link.refs||[]).filter(Boolean).forEach(raw=>{
+      const ref=String(raw).split('.')[0];
+      const src=nodeById[ref==='start'?startId:ref];
+      if(!src){
+        if(link.allowMissingIndicatorRefs&&/^[^.]+\.[^.]+$/.test(String(raw)))return;
+        throw new Error('Component '+link.id+' references unknown component ID "'+ref+'".');
+      }
+      if(src.id===dest.id)throw new Error('A component cannot reference itself: '+src.id);
+      // Conditions have YES/NO outputs; every other block has a single output.
+      const fromPort=src.type==='condition'?(link.port==='false'?'false':'true'):'out';
+      const edge={from:src.id,to:dest.id,fromPort,...(link.role?{role:link.role}:{})};
+      const key=[edge.from,edge.to,edge.fromPort,edge.role||''].join('|');
+      if(edgeKeys.has(key))return;edgeKeys.add(key);next.edges.push(edge);
+    });
+  });
+  // The Start block anchors the flow: it feeds every indicator / condition / risk block that has no other input.
+  next.nodes.filter(n=>[...INDICATORS,'condition','risk'].includes(n.type)).forEach(n=>{
+    if(!next.edges.some(e=>e.to===n.id))next.edges.push({from:startId,to:n.id,fromPort:'out'});
+  });
+  // Positions: keep what the canvas already had; arrange everything else.
+  const placed=new Set();
+  next.nodes.forEach(n=>{const s=savedById.get(n.id);if(s){n.x=s.x;n.y=s.y;placed.add(n.id)}});
+  let autoLaidOut=false;
+  if(placed.size<2){
+    const pos=autoLayout(next.nodes,next.edges);
+    next.nodes.forEach(n=>{const p=pos.get(n.id);if(p){n.x=p.x;n.y=p.y}});
+    autoLaidOut=true;
+  }else placeNewNodes(next.nodes,next.edges,placed);
+  if(savedGraph)next.strategy_name=(code.match(/^# Strategy:\s*(.+)$/m)||[])[1]||savedGraph.strategy_name||next.strategy_name;
+  const parsedIR=graphToIR(next.nodes,next.edges,next.strategy_name);
+  return {...irToGraph(parsedIR),schema:parsedIR.schema,schema_version:parsedIR.schema_version,components:parsedIR.components,connections:parsedIR.connections,autoLaidOut};
+}
+function parseSupportedPython(code){
+  if(/\bsb\.(?:indicator|condition|logic|action|risk|position)\s*\(/.test(code)||/^\s*def\s+build_strategy\s*\(/m.test(code))return parseStrategyDSL(code);
+  if(!/df\["[A-Za-z0-9_]+"\]\s*=/.test(code))throw new Error('No strategy declarations found. Add sb.indicator / sb.condition / sb.logic / sb.action declarations inside build_strategy(sb).');
+ const savedIR=decodeStrategyIR(code);
+ let base;
+ if(savedIR){base=irToGraph(savedIR);}
+ else{
+   // If the user pasted edited code without the metadata comment, use the
+   // current canvas as the graph baseline so existing connections survive.
+   base={version:1,strategy_name:$('#strategyName').value,nodes:clone(nodes),edges:clone(edges)};
+ }
+ const next=clone(base),py=id=>id.replace(/[^a-zA-Z0-9_]/g,'_');
+ const lines=code.split('\n');
+ const strategyTitle=code.match(/^# Strategy:\s*(.+)$/m);
+ if(strategyTitle)next.strategy_name=strategyTitle[1].trim();
+ const rawColumns=new Set(['open','high','low','close','volume']);
+ const indicatorLines=lines.map((line,index)=>({line,index})).filter(x=>/^\s*df\["[A-Za-z0-9_]+"\]\s*=/.test(x.line)&&/(RSIIndicator|EMAIndicator|.ewm\(|AverageTrueRange)/.test(x.line));
+ const existingIndicators=next.nodes.filter(n=>['rsi','ema','macd','bollinger','atr'].includes(n.type));
+ if(indicatorLines.length===0&&existingIndicators.length)throw new Error('No supported indicator calculation was found. Keep an RSI, EMA, or ATR calculation in the code.');
+ if(indicatorLines.length!==existingIndicators.length)throw new Error('Adding or removing indicator blocks is not supported yet. Replace an existing indicator calculation instead.');
+ const indicatorColumns={};
+ const usedLines=new Set();
+ existingIndicators.forEach((node,i)=>{
+   let entry=indicatorLines.find(x=>x.line.includes('df["'+py(node.id)+'"]'));
+   if(!entry)entry=indicatorLines.find(x=>!usedLines.has(x.index));
+   if(!entry)throw new Error('Could not match the indicator calculation for '+node.id+'.');
+   usedLines.add(entry.index);
+   const line=entry.line.trim();
+   const nameMatch=line.match(/^df\["([^\"]+)"\]\s*=/);
+   const newName=nameMatch&&nameMatch[1];
+   if(!newName)throw new Error('Could not read the indicator output column.');
+   let newType=null,period=null,source='close';
+   if(line.includes('RSIIndicator')){newType='rsi';const m=line.match(/window\s*=\s*(\d+)/);period=m?Number(m[1]):null;}
+   else if(line.includes('EMAIndicator')||line.includes('.ewm(')){newType='ema';const m=line.match(/(?:window|span)\s*=\s*(\d+)/);period=m?Number(m[1]):null;}
+   else if(line.includes('AverageTrueRange')){newType='atr';const m=line.match(/window\s*=\s*(\d+)/);period=m?Number(m[1]):null;}
+   else throw new Error('Unsupported indicator calculation for '+newName+'.');
+   const src=line.match(/df\["([^\"]+)"\]/g);
+   if(src&&src.length>1){const sm=src[1].match(/df\["([^\"]+)"\]/);if(sm)source=sm[1];}
+   node.type=newType;
+   if(period!==null)node.props.period=period;
+   if(newType==='ema')node.props.maType='EMA';
+   node.props.source=source;
+   indicatorColumns[newName]=node.id;
+ });
+ const conditionLines=lines.map(x=>x.trim()).filter(x=>/^df\["[A-Za-z0-9_]+"\]\s*=/.test(x)&&!/(RSIIndicator|EMAIndicator|.ewm\(|AverageTrueRange)/.test(x));
+ const conditionNodes=next.nodes.filter(n=>n.type==='condition');
+ const parsedConditions=new Set();
+ conditionNodes.forEach(n=>{
+   const name=py(n.id),line=conditionLines.find(x=>x.startsWith('df["'+name+'"] ='));
+   if(!line)throw new Error('Removing condition calculations is not supported yet: '+name);
+   const expr=line.split('=').slice(1).join('=').trim();
+   const m=expr.match(/^(df\["([^\"]+)"\]|[-+]?\d+(?:.\d+)?|True|False)\s*(<=|>=|==|!=|<|>)\s*(df\["([^\"]+)"\]|[-+]?\d+(?:.\d+)?|True|False)$/);
+   if(!m)throw new Error('Unsupported condition expression for '+name+'. Use a simple comparison between a column and a number or another column.');
+   const resolveOperand=(token,column)=>{
+     if(column){const indicatorId=indicatorColumns[column];return indicatorId?indicatorId+'.value':(rawColumns.has(column.toLowerCase())?column:column+'.value');}
+     if(token==='True')return true;if(token==='False')return false;
+     return Number(token);
+   };
+   n.props.left=resolveOperand(m[1],m[2]);
+   n.props.operator=m[3];
+   n.props.right=resolveOperand(m[4],m[5]);
+   parsedConditions.add(name);
+ });
+ const signalLines=lines.filter(x=>/df.loc\[df\["[^"]+"\],\s*"signal"\]\s*=\s*(-?1)/.test(x));
+ const priorActions=next.nodes.filter(n=>['buy','sell'].includes(n.type)).map(action=>{
+   const edge=next.edges.find(e=>e.to===action.id);
+   const condition=edge&&next.nodes.find(n=>n.id===edge.from);
+   return condition?.type==='condition'?{conditionId:condition.id,type:action.type,port:edge.fromPort,node:action}:null;
+ }).filter(Boolean);
+ const reusedActions=new Set();
+ updateCountersFromNodes(next.nodes);
+ next.nodes=next.nodes.filter(n=>!['buy','sell'].includes(n.type));
+ next.edges=next.edges.filter(e=>!['buy','sell'].includes(next.nodes.find(n=>n.id===e.to)?.type));
+ signalLines.forEach((line,i)=>{
+   const m=line.match(/df.loc\[df\["([^"]+)"\],\s*"signal"\]\s*=\s*(-?1)/);
+   const cond=next.nodes.find(n=>py(n.id)===m[1]&&n.type==='condition');
+   if(!cond)throw new Error('Trade action refers to an unknown condition: '+m[1]);
+   const type=Number(m[2])===1?'buy':'sell',prior=priorActions.find(x=>x.conditionId===cond.id&&x.type===type&&!reusedActions.has(x.node.id));
+   if(prior)reusedActions.add(prior.node.id);
+   const id=prior?.node.id||nextId(type,next.nodes);
+   next.nodes.push(prior?prior.node:{id,type,x:cond.x+(i%2)*230,y:cond.y+175,props:clone(defaults[type].props)});
+   next.edges.push({from:cond.id,to:id,fromPort:prior?.port||'true'});
+ });
+ const validIds=new Set(next.nodes.map(n=>n.id));
+ next.edges=next.edges.filter(e=>validIds.has(e.from)&&validIds.has(e.to));
+ if(!next.nodes.some(n=>n.type==='start'))throw new Error('A strategy must contain a Start block.');
+ next.id_counters=mergeIdCounters(next.id_counters,next.nodes);
+ return next;
+}
+
+function renderBottom(){
+ const box=$('#bottomContent');
+ if(activeBottom==='logs'){box.innerHTML='<div class="log-line"><span class="log-time">Ready</span><span class="dot"></span><span>Strategy Builder initialized. Connect blocks, then select Validate strategy.</span></div>'+ (window.lastLogs||[]).map(x=>`<div class="log-line"><span class="log-time">${x.time}</span><span class="dot" style="background:${x.color||'#20c889'}"></span><span>${x.text}</span></div>`).join('')}
+ if(activeBottom==='results'){const v=validate();box.innerHTML=`<div style="font-weight:700;margin-bottom:10px">${v.valid?'✓ Graph structure passed':'Graph validation found issues'}</div>`+(v.errors.length?v.errors.map(x=>`<div class="log-line"><span style="color:#f36b76">ERROR</span><span>${x}</span></div>`).join(''):'<div class="log-line"><span class="dot"></span><span>No blocking structural errors.</span></div>')+v.warnings.map(x=>`<div class="log-line"><span style="color:#f4b44c">WARNING</span><span>${x}</span></div>`).join('')+'<p style="color:#7f93ad;font-size:12px">Validation checks graph structure only. It does not prove profitability or execute the strategy.</p>'}
+ if(activeBottom==='performance')box.innerHTML='<div class="metric-grid"><div class="metric"><span>Total return</span><strong>Not calculated</strong></div><div class="metric"><span>Win rate</span><strong>Not calculated</strong></div><div class="metric"><span>Total trades</span><strong>0</strong></div><div class="metric"><span>Profit factor</span><strong>Not calculated</strong></div></div><p style="color:#8194ad;font-size:12px;margin-top:12px">Performance metrics will be populated when a Python backtesting engine is connected.</p>';
+ if(activeBottom==='chart')box.innerHTML='<div style="height:100%;display:grid;place-items:center;color:#8194ad;text-align:center">Chart preview will be available after historical backtesting is connected.</div>';
+ if(activeBottom==='code')box.innerHTML=`<div class="code-wrap"><div class="code-toolbar"><span>Python strategy editor · Strategy declarations</span><div style="display:flex;gap:6px"><button class="btn small" id="expandPython">Expand editor</button><button class="btn small" id="applyPython">Apply to canvas</button><button class="btn small" id="copyCode">Copy code</button></div></div><textarea class="code-editor" id="pythonCode" spellcheck="false" aria-label="Editable Python strategy code"></textarea><div class="code-status" id="codeStatus">Use sb.indicator / condition / logic / action / risk / position declarations. Every component needs a unique id; reference other components by id.</div></div>`;
+ if(activeBottom==='code'){
+   const editor=$('#pythonCode');
+   if(editor){
+      editor.value=generatePython();
+      editor.addEventListener('input',onPythonEditorInput);
+      $('#applyPython')?.addEventListener('click',()=>applyPythonToCanvas(true));
+      const expandButton=$('#expandPython');
+      const codeWrap=editor.closest('.code-wrap');
+      const setExpanded=(expanded)=>{
+        codeWrap?.classList.toggle('fullscreen-editor',expanded);
+        if(expandButton)expandButton.textContent=expanded?'Restore editor':'Expand editor';
+        if(expanded){editor.focus();editor.style.height='';}
+      };
+      expandButton?.addEventListener('click',()=>setExpanded(!codeWrap.classList.contains('fullscreen-editor')));
+      editor.addEventListener('keydown',e=>{
+        if(e.key==='Escape'&&codeWrap?.classList.contains('fullscreen-editor')){
+          e.preventDefault();setExpanded(false);editor.focus();
+        }
+        // Keep Tab useful inside the code editor instead of moving focus away.
+        if(e.key==='Tab'){
+          e.preventDefault();
+          const start=editor.selectionStart,end=editor.selectionEnd;
+          editor.setRangeText('    ',start,end,'end');
+          editor.dispatchEvent(new Event('input',{bubbles:true}));
+        }
+      });
+    }
+ }
+ $('#copyCode')?.addEventListener('click',()=>navigator.clipboard?.writeText($('#pythonCode')?.value||generatePython()).then(()=>toast('Python code copied')).catch(()=>toast('Clipboard permission unavailable')));
+}
+function setBottom(tab){activeBottom=tab;document.querySelectorAll('.bottom-tab').forEach(b=>b.classList.toggle('active',b.dataset.bottomtab===tab));renderBottom()}
+$('#flowModeBtn')?.addEventListener('click',()=>{$('#flowModeBtn').classList.add('active');$('#viewCodeBtn').classList.remove('active')});
+$('#viewCodeBtn')?.addEventListener('click',()=>{$('#viewCodeBtn').classList.add('active');$('#flowModeBtn').classList.remove('active');setBottom('code')});
+
+function loadTemplate(type){
+ nodes=[];edges=[];world.querySelectorAll('.node').forEach(x=>x.remove());
+ if(type==='rsi'){
+  const a=addNode('start',570,85),b=addNode('rsi',570,235),c=addNode('condition',570,385);c.props={left:b.id+'.value',operator:'<',right:30};
+  const d=addNode('buy',570,560),e=addNode('condition',900,385);e.props={left:b.id+'.value',operator:'>',right:70};const f=addNode('sell',900,560);
+  edges=[{from:a.id,to:b.id,fromPort:'out'},{from:b.id,to:c.id,fromPort:'out'},{from:c.id,to:d.id,fromPort:'true'},{from:b.id,to:e.id,fromPort:'out'},{from:c.id,to:e.id,fromPort:'false'},{from:e.id,to:f.id,fromPort:'true'}];
+ }else{
+  const a=addNode('start',570,85),b=addNode('ema',570,235),c=addNode('ema',900,235);b.props={period:20,source:'close',maType:'EMA'};c.props={period:50,source:'close',maType:'EMA'};const d=addNode('condition',735,405);d.props={left:b.id+'.value',operator:'crosses_above',right:c.id+'.value'};const e=addNode('buy',735,570);
+  edges=[{from:a.id,to:b.id,fromPort:'out'},{from:a.id,to:c.id,fromPort:'out'},{from:b.id,to:d.id,fromPort:'out'},{from:c.id,to:d.id,fromPort:'out'},{from:d.id,to:e.id,fromPort:'true'}];
+ }
+ renderCanvasFromIR(graphToIR(nodes,edges,$('#strategyName').value));saveHistory();setBottom('code');toast('Template loaded');
+}
+// Clicking empty canvas clears selection and collapses the Properties panel.
+$('#workspace').addEventListener('pointerdown',e=>{
+ // composedPath is captured at dispatch time, so it still works after selectNode() re-renders the clicked node
+ const path=e.composedPath();
+ if(path.some(el=>el.classList&&(el.classList.contains('node')||el.classList.contains('edge')||el.classList.contains('canvas-tools')||el.classList.contains('canvas-head'))))return;
+ selected=null;selectedEdge=null;
+ nodes.forEach(renderNode);
+ renderEdges();
+ renderProperties(null);
+});
+function clientPoint(e){const r=viewport.getBoundingClientRect();return {x:(e.clientX-r.left+viewport.scrollLeft)/zoom,y:(e.clientY-r.top+viewport.scrollTop)/zoom}}
+document.querySelectorAll('.palette-item[draggable="true"]').forEach(item=>item.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',item.dataset.type);e.dataTransfer.effectAllowed='copy'}));
+viewport.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='copy'});
+viewport.addEventListener('drop',e=>{e.preventDefault();const type=e.dataTransfer.getData('text/plain');if(!defaults[type])return;const p=clientPoint(e);addNode(type,Math.max(10,p.x-95),Math.max(55,p.y-35));});
+// Expand/collapse component-library categories.
+document.querySelectorAll('.section-toggle').forEach(toggle=>toggle.addEventListener('click',()=>{toggle.classList.toggle('open');const chev=toggle.querySelector('.chevron');if(chev)chev.textContent=toggle.classList.contains('open')?'⌄':'›';}));
+document.querySelectorAll('.panel-toggle').forEach(btn=>btn.addEventListener('click',()=>{
+ const panel=btn.dataset.panel,app=$('.app');
+ if(panel==='right'){
+  const hideNow=!app.classList.contains('hide-right')&&!app.classList.contains('properties-closed');
+  if(hideNow){app.classList.add('hide-right');app.classList.remove('properties-closed');}
+  else{app.classList.remove('hide-right','properties-closed');$('.right').style.display='block';$('#rightResize').style.display='flex';}
+ }else{
+  app.classList.toggle('hide-'+panel);
+ }
+ const visible=panel==='right'?(!app.classList.contains('hide-right')&&!app.classList.contains('properties-closed')):!app.classList.contains('hide-'+panel);
+ btn.classList.toggle('active',visible);btn.setAttribute('aria-pressed',String(visible));
+}));
+document.querySelectorAll('[data-lefttab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-lefttab]').forEach(x=>x.classList.toggle('active',x===b));$('#elementsPanel').style.display=b.dataset.lefttab==='elements'?'block':'none';$('#templatesPanel').style.display=b.dataset.lefttab==='templates'?'block':'none'}));
+document.querySelectorAll('[data-bottomtab]').forEach(b=>b.addEventListener('click',()=>setBottom(b.dataset.bottomtab)));
+document.querySelectorAll('.template').forEach(b=>b.addEventListener('click',()=>loadTemplate(b.dataset.template)));
+$('#paletteSearch').addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('.palette-item[draggable]').forEach(x=>x.style.display=x.textContent.toLowerCase().includes(q)?'flex':'none')});
+$('#zoomIn').onclick=()=>{zoom=Math.min(1.5,zoom+.1);world.style.transform=`scale(${zoom})`};$('#zoomOut').onclick=()=>{zoom=Math.max(.55,zoom-.1);world.style.transform=`scale(${zoom})`};$('#fitBtn').onclick=fitView;
+$('#tidyBtn').onclick=()=>{
+ if(!nodes.length){toast('Nothing to arrange yet');return}
+ const pos=autoLayout(nodes,edges);
+ nodes.forEach(n=>{const p=pos.get(n.id);if(p){n.x=p.x;n.y=p.y}});
+ nodes.forEach(renderNode);renderEdges();saveHistory();fitView();toast('Canvas arranged');
+};
+$('#undoBtn').onclick=undo;$('#redoBtn').onclick=redo;
+$('#saveBtn').onclick=()=>{localStorage.setItem('rg_strategy_builder',snapshot());toast('Strategy saved in this browser')};
+$('#newBtn').onclick=()=>$('#modal').style.display='grid';$('#cancelNew').onclick=()=>$('#modal').style.display='none';$('#confirmNew').onclick=()=>{$('#modal').style.display='none';renderCanvasFromIR({schema:'rg-labs.strategy-ir',schema_version:1,strategy_name:$('#strategyName').value,components:[],connections:[]});saveHistory();toast('New canvas ready')};
+$('#exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(strategyJSON(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='strategy.json';a.click();URL.revokeObjectURL(a.href);toast('Strategy JSON exported')};
+$('#runBtn').onclick=()=>{const v=validate();window.lastLogs=[{time:new Date().toLocaleTimeString(),text:v.valid?'Graph validation completed. No blocking structural errors.':'Graph validation completed with '+v.errors.length+' error(s).',color:v.valid?'#20c889':'#f05260'},...v.warnings.map(x=>({time:'Warning',text:x,color:'#f4aa3c'})),...v.errors.map(x=>({time:'Error',text:x,color:'#f05260'}))];setBottom('results');toast(v.valid?'Graph structure validated':'Fix validation errors')};
+$('#strategyName').addEventListener('change',saveHistory);
+window.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='s'){e.preventDefault();$('#saveBtn').click()}if(e.key==='Delete'&&selected&&!['INPUT','SELECT'].includes(document.activeElement.tagName))deleteNode(selected)});
+
+// Resizable workspace panels. Drag the divider or use arrow keys when focused.
+function setPanelWidth(side,width){
+ const min=side==='left'?170:220, max=side==='left'?420:460;
+ const value=Math.max(min,Math.min(max,width));
+ document.documentElement.style.setProperty(side==='left'?'--left-width':'--right-width',value+'px');
+}
+function attachColumnResizer(handleId,side){
+ const handle=$('#'+handleId);let startX=0,startWidth=0;
+ const getWidth=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue(side==='left'?'--left-width':'--right-width'))||(side==='left'?250:300);
+ handle.addEventListener('pointerdown',e=>{
+  e.preventDefault();startX=e.clientX;startWidth=getWidth();handle.classList.add('dragging');handle.setPointerCapture(e.pointerId);
+ });
+ handle.addEventListener('pointermove',e=>{
+  if(!handle.hasPointerCapture(e.pointerId))return;
+  const delta=e.clientX-startX;
+  setPanelWidth(side,side==='left'?startWidth+delta:startWidth-delta);
+ });
+ const stop=e=>{if(handle.hasPointerCapture(e.pointerId)){handle.releasePointerCapture(e.pointerId);handle.classList.remove('dragging')}};
+ handle.addEventListener('pointerup',stop);handle.addEventListener('pointercancel',stop);
+ handle.addEventListener('keydown',e=>{
+  if(!['ArrowLeft','ArrowRight'].includes(e.key))return;
+  e.preventDefault();const direction=e.key==='ArrowRight'?1:-1;
+  setPanelWidth(side,getWidth()+(side==='left'?direction:-direction)*12);
+ });
+}
+syncIRFromCanvas();history=[snapshot()];historyIndex=0;
+attachColumnResizer('leftResize','left');
+attachColumnResizer('rightResize','right');
+
+const resizeHandle=$('#bottomResize');
+let resizeStartY=0,resizeStartHeight=205;
+function setBottomHeight(height){
+ const max=Math.max(300,window.innerHeight-150);
+ const value=Math.max(120,Math.min(max,height));
+ document.documentElement.style.setProperty('--bottom-height',value+'px');
+ resizeHandle.setAttribute('aria-valuenow',String(Math.round(value)));
+}
+resizeHandle.addEventListener('pointerdown',e=>{
+ e.preventDefault();resizeStartY=e.clientY;
+ const current=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bottom-height'))||205;
+ resizeStartHeight=current;resizeHandle.classList.add('dragging');resizeHandle.setPointerCapture(e.pointerId);
+});
+resizeHandle.addEventListener('pointermove',e=>{
+ if(!resizeHandle.hasPointerCapture(e.pointerId))return;
+ // Moving the divider upward increases the bottom panel height.
+ setBottomHeight(resizeStartHeight+(resizeStartY-e.clientY));
+});
+function finishResize(e){if(resizeHandle.hasPointerCapture(e.pointerId))resizeHandle.releasePointerCapture(e.pointerId);resizeHandle.classList.remove('dragging')}
+resizeHandle.addEventListener('pointerup',finishResize);resizeHandle.addEventListener('pointercancel',finishResize);
+resizeHandle.addEventListener('keydown',e=>{
+ if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+  e.preventDefault();const current=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bottom-height'))||205;
+  setBottomHeight(current+(e.key==='ArrowUp'?20:-20));
+ }
+});
+window.addEventListener('resize',()=>{const current=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bottom-height'))||205;setBottomHeight(current)});
+const saved=localStorage.getItem('rg_strategy_builder');if(saved){try{restore(saved)}catch(e){loadTemplate('rsi')}}else{loadTemplate('rsi')}
+// Test hook (read-only helpers used by the automated checks).
+window.__rg={get nodes(){return nodes},get edges(){return edges},generatePython,parseSupportedPython,autoLayout,graphToIR};
+})();
+</script>
+</body>
+</html>
